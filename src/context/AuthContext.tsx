@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { UserProfile, Tenant } from '@/types';
-import { MOCK_TENANTS } from '@/lib/mock-data';
 
 interface AuthContextType {
   user: any | null;
@@ -80,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (profData) setProfile(profData as UserProfile);
 
@@ -101,15 +100,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (localFallback) {
         setUserTenant(localFallback);
       } else {
-        // Create user-specific tenant instance so it NEVER falls back to Calixto Burger demo
+        // Build user-specific tenant (NEVER fallback to Calixto Burger)
+        const tenantName = localFallback?.name || 'Meu Restaurante';
+        const slugBase = tenantName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+        
         const defaultUserTenant: Tenant = {
           id: `t-${userId.slice(0, 8)}`,
           owner_id: userId,
-          name: 'Meu Novo Restaurante',
-          slug: `restaurante-${userId.slice(0, 6)}`,
+          name: tenantName,
+          slug: `${slugBase}-${userId.slice(0, 4)}`,
           logo_url: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&h=300&fit=crop',
           banner_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&h=500&fit=crop',
-          description: 'Cardápio digital inteligente personalizado.',
+          description: `Cardápio digital inteligente de ${tenantName}`,
           phone: '(11) 99999-8888',
           whatsapp: '5511999998888',
           address: 'Endereço a definir no painel',
@@ -126,12 +128,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem('konnexy_user_tenant', JSON.stringify(defaultUserTenant));
         }
 
-        // Try DB creation in Supabase
+        // Try inserting tenant row into Supabase DB
         await supabase.from('tenants').insert({
           owner_id: userId,
           name: defaultUserTenant.name,
           slug: defaultUserTenant.slug,
           whatsapp: defaultUserTenant.whatsapp,
+          description: defaultUserTenant.description,
+          address: defaultUserTenant.address,
         });
       }
     } catch (err) {
@@ -159,18 +163,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
         if (error) {
-          // If login error, set local user state
-          const mockUser = { id: `u-${email.replace(/[^a-zA-Z0-9]/g, '')}`, email };
-          setUser(mockUser);
-          await fetchUserProfileAndTenant(mockUser.id, email, null);
-          return {};
+          return { error: error.message };
         }
         if (data?.user) {
           setUser(data.user);
           await fetchUserProfileAndTenant(data.user.id, data.user.email, null);
         }
       } catch (err: any) {
-        console.warn('Supabase login notice:', err);
+        return { error: err?.message || 'Erro ao realizar login.' };
       }
     } else {
       const mockUser = { id: `u-${email.replace(/[^a-zA-Z0-9]/g, '')}`, email };
@@ -203,18 +203,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       created_at: new Date().toISOString(),
     };
 
-    const ownerId = `u-${Date.now()}`;
-    newTenant.owner_id = ownerId;
-
-    setUser({ id: ownerId, email });
-    setProfile({ id: `prof-${Date.now()}`, user_id: ownerId, email, role: 'owner' });
-    setUserTenant(newTenant);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));
-    }
-
     if (isSupabaseConfigured()) {
       try {
+        // 1. SignUp in Supabase Auth
         const { data, error } = await supabase.auth.signUp({
           email,
           password: pass,
@@ -225,26 +216,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         });
 
+        if (error) {
+          return { error: error.message };
+        }
+
         if (data?.user) {
-          newTenant.owner_id = data.user.id;
+          const userId = data.user.id;
+          newTenant.owner_id = userId;
+
           setUser(data.user);
-          localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));
+          setProfile({ id: `prof-${Date.now()}`, user_id: userId, email, role: 'owner' });
+          setUserTenant(newTenant);
 
-          // Also attempt immediate sign in
-          await supabase.auth.signInWithPassword({ email, password: pass });
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));
+          }
 
-          // Direct insert backup
+          // 2. Insert Profile in Supabase DB
+          await supabase.from('profiles').insert({
+            user_id: userId,
+            email,
+            role: 'owner',
+          });
+
+          // 3. Insert Tenant in Supabase DB
           await supabase.from('tenants').insert({
-            owner_id: data.user.id,
+            owner_id: userId,
             name: restaurantName,
             slug: cleanSlug,
             whatsapp: '5511999998888',
             description: `Cardápio digital inteligente de ${restaurantName}`,
             address: 'Endereço a definir no painel',
+            subscription_status: 'active',
           });
+
+          // 4. Attempt direct sign-in so session token is active
+          await supabase.auth.signInWithPassword({ email, password: pass });
         }
-      } catch (err) {
+      } catch (err: any) {
         console.warn('Supabase signup notice:', err);
+        return { error: err?.message || 'Erro durante o cadastro no Supabase.' };
+      }
+    } else {
+      const ownerId = `u-${Date.now()}`;
+      newTenant.owner_id = ownerId;
+      setUser({ id: ownerId, email });
+      setProfile({ id: `prof-${Date.now()}`, user_id: ownerId, email, role: 'owner' });
+      setUserTenant(newTenant);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));
       }
     }
 
