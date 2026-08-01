@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '@/lib/mock-data';
 import { Tenant, Category, Product } from '@/types';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { OverviewMetrics } from '@/components/admin/OverviewMetrics';
@@ -17,8 +16,8 @@ export default function TenantAdminPage() {
   const { userTenant, isLoading, updateUserTenant } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
-  const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     if (userTenant && userTenant.id) {
@@ -26,8 +25,8 @@ export default function TenantAdminPage() {
       async function loadTenantData() {
         const cats = await DataService.getCategoriesByTenant(tenantId);
         const prods = await DataService.getProductsByTenant(tenantId);
-        if (cats.length > 0) setCategories(cats);
-        if (prods.length > 0) setProducts(prods);
+        setCategories(cats);
+        setProducts(prods);
       }
       loadTenantData();
     }
@@ -54,7 +53,7 @@ export default function TenantAdminPage() {
 
         {/* Content Area (Scoped strictly to logged in user tenant) */}
         <main className="flex-1 w-full glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 min-h-[calc(100vh-80px)]">
-          {activeTab === 'dashboard' && <OverviewMetrics />}
+          {activeTab === 'dashboard' && <OverviewMetrics tenantId={userTenant.id} />}
           {activeTab === 'profile' && <RestaurantProfileForm tenant={userTenant} onSave={updateUserTenant} />}
           {activeTab === 'categories' && <CategoriesManager categories={categories} onUpdateCategories={setCategories} />}
           {activeTab === 'products' && <ProductsManager products={products} categories={categories} onUpdateProducts={setProducts} />}

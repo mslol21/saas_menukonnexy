@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { MOCK_TENANTS, MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_ANALYTICS } from './mock-data';
-import { Tenant, Category, Product } from '@/types';
+import { Tenant, Category, Product, AnalyticsSummary } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
@@ -31,7 +31,6 @@ export const DataService = {
       }
     }
 
-    // Check localStorage for newly created tenant
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('konnexy_user_tenant');
       if (saved) {
@@ -54,12 +53,17 @@ export const DataService = {
           .eq('is_active', true)
           .order('sort_order', { ascending: true });
 
-        if (data && !error && data.length > 0) return data as Category[];
+        if (data && !error) return data as Category[];
       } catch (err) {
-        console.warn('Supabase fetch failed, falling back to mock:', err);
+        console.warn('Supabase fetch failed:', err);
       }
     }
-    return MOCK_CATEGORIES;
+
+    // Only return mock categories for demo tenant t-1
+    if (tenantId === 't-1' || tenantId === 'calixto-burger') {
+      return MOCK_CATEGORIES;
+    }
+    return [];
   },
 
   async getProductsByTenant(tenantId: string): Promise<Product[]> {
@@ -71,12 +75,17 @@ export const DataService = {
           .eq('tenant_id', tenantId)
           .order('sort_order', { ascending: true });
 
-        if (data && !error && data.length > 0) return data as Product[];
+        if (data && !error) return data as Product[];
       } catch (err) {
-        console.warn('Supabase fetch failed, falling back to mock:', err);
+        console.warn('Supabase fetch failed:', err);
       }
     }
-    return MOCK_PRODUCTS;
+
+    // Only return mock products for demo tenant t-1
+    if (tenantId === 't-1' || tenantId === 'calixto-burger') {
+      return MOCK_PRODUCTS;
+    }
+    return [];
   },
 
   async recordAnalyticsEvent(tenantId: string, eventType: 'page_view' | 'qr_scan' | 'product_view' | 'whatsapp_click', productId?: string, tableNumber?: number) {
@@ -94,7 +103,18 @@ export const DataService = {
     }
   },
 
-  async getAnalyticsSummary(tenantId: string) {
-    return MOCK_ANALYTICS;
+  async getAnalyticsSummary(tenantId: string): Promise<AnalyticsSummary> {
+    if (tenantId === 't-1' || tenantId === 'calixto-burger') {
+      return MOCK_ANALYTICS;
+    }
+
+    // New tenant starts clean with ZERO analytics until activity is recorded
+    return {
+      total_views: 0,
+      qr_scans: 0,
+      whatsapp_clicks: 0,
+      top_products: [],
+      recent_activity: [],
+    };
   }
 };

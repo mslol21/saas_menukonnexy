@@ -1,21 +1,46 @@
 'use client';
 
-import React from 'react';
-import { Eye, QrCode, MessageSquare, TrendingUp, Sparkles, Clock, Flame } from 'lucide-react';
-import { MOCK_ANALYTICS } from '@/lib/mock-data';
+import React, { useState, useEffect } from 'react';
+import { Eye, QrCode, MessageSquare, TrendingUp, Sparkles, Clock, Flame, Info } from 'lucide-react';
+import { DataService } from '@/lib/supabase';
+import { AnalyticsSummary } from '@/types';
 
-export const OverviewMetrics: React.FC = () => {
+interface OverviewMetricsProps {
+  tenantId?: string;
+}
+
+export const OverviewMetrics: React.FC<OverviewMetricsProps> = ({ tenantId = 't-1' }) => {
+  const [metrics, setMetrics] = useState<AnalyticsSummary>({
+    total_views: 0,
+    qr_scans: 0,
+    whatsapp_clicks: 0,
+    top_products: [],
+    recent_activity: [],
+  });
+
+  useEffect(() => {
+    async function loadMetrics() {
+      const summary = await DataService.getAnalyticsSummary(tenantId);
+      setMetrics(summary);
+    }
+    loadMetrics();
+  }, [tenantId]);
+
+  const conversionRate = metrics.total_views > 0
+    ? ((metrics.whatsapp_clicks / metrics.total_views) * 100).toFixed(1)
+    : '0.0';
+
   return (
     <div className="space-y-8">
       {/* Top Banner Welcome */}
       <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent relative overflow-hidden">
         <div className="relative z-10">
           <span className="text-xs font-bold text-orange-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
-            <Sparkles className="w-4 h-4" /> Visão Geral em Tempo Real
+            <Sparkles className="w-4 h-4" /> Visão Geral do Seu Cardápio
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-white">Desempenho do Seu Cardápio</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-white">Desempenho em Tempo Real</h2>
           <p className="text-sm text-zinc-300 mt-1 max-w-xl">
-            Acompanhe o engajamento dos seus clientes, acessos diretos e conversão de pedidos para o WhatsApp.
+            Acompanhe o engajamento dos seus clientes, acessos aos pratos e conversão de pedidos para o WhatsApp.
           </p>
         </div>
       </div>
@@ -30,10 +55,8 @@ export const OverviewMetrics: React.FC = () => {
             </div>
           </div>
           <div>
-            <span className="text-3xl font-black text-white">{MOCK_ANALYTICS.total_views.toLocaleString()}</span>
-            <div className="flex items-center gap-1 text-xs text-emerald-400 font-semibold mt-1">
-              <TrendingUp className="w-3.5 h-3.5" /> +14.2% esta semana
-            </div>
+            <span className="text-3xl font-black text-white">{metrics.total_views.toLocaleString()}</span>
+            <span className="text-xs text-zinc-400 block mt-1">Acessos diretos ao seu cardápio</span>
           </div>
         </div>
 
@@ -45,10 +68,8 @@ export const OverviewMetrics: React.FC = () => {
             </div>
           </div>
           <div>
-            <span className="text-3xl font-black text-white">{MOCK_ANALYTICS.qr_scans.toLocaleString()}</span>
-            <div className="flex items-center gap-1 text-xs text-emerald-400 font-semibold mt-1">
-              <TrendingUp className="w-3.5 h-3.5" /> +8.5% esta semana
-            </div>
+            <span className="text-3xl font-black text-white">{metrics.qr_scans.toLocaleString()}</span>
+            <span className="text-xs text-zinc-400 block mt-1">Leituras de placas nas mesas</span>
           </div>
         </div>
 
@@ -60,10 +81,8 @@ export const OverviewMetrics: React.FC = () => {
             </div>
           </div>
           <div>
-            <span className="text-3xl font-black text-white">{MOCK_ANALYTICS.whatsapp_clicks.toLocaleString()}</span>
-            <div className="flex items-center gap-1 text-xs text-emerald-400 font-semibold mt-1">
-              <TrendingUp className="w-3.5 h-3.5" /> +21.4% esta semana
-            </div>
+            <span className="text-3xl font-black text-white">{metrics.whatsapp_clicks.toLocaleString()}</span>
+            <span className="text-xs text-zinc-400 block mt-1">Pedidos encaminhados</span>
           </div>
         </div>
 
@@ -75,7 +94,7 @@ export const OverviewMetrics: React.FC = () => {
             </div>
           </div>
           <div>
-            <span className="text-3xl font-black text-white">12.0%</span>
+            <span className="text-3xl font-black text-white">{conversionRate}%</span>
             <span className="text-xs text-zinc-400 block mt-1">Visitas convertidas em pedido</span>
           </div>
         </div>
@@ -88,42 +107,58 @@ export const OverviewMetrics: React.FC = () => {
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <Flame className="w-5 h-5 text-orange-500" /> Pratos Mais Visualizados
           </h3>
-          <div className="space-y-4">
-            {MOCK_ANALYTICS.top_products.map((prod, idx) => (
-              <div key={idx} className="flex items-center justify-between gap-4 p-3 rounded-2xl glass-panel border border-white/5">
-                <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-lg bg-orange-500/20 text-orange-400 text-xs font-extrabold flex items-center justify-center">
-                    #{idx + 1}
-                  </span>
-                  <img src={prod.image_url} alt={prod.name} className="w-10 h-10 rounded-xl object-cover" />
-                  <div>
-                    <h4 className="text-sm font-bold text-white">{prod.name}</h4>
-                    <span className="text-xs text-zinc-400">{prod.views.toLocaleString()} acessos</span>
+          {metrics.top_products.length === 0 ? (
+            <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl p-4">
+              <Info className="w-8 h-8 text-zinc-500 mx-auto mb-2" />
+              <p className="text-xs text-zinc-400">Nenhum acesso registrado a pratos ainda.</p>
+              <span className="text-[11px] text-orange-400 block mt-1">Cadastre seus produtos na aba "Produtos & Pratos".</span>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {metrics.top_products.map((prod, idx) => (
+                <div key={idx} className="flex items-center justify-between gap-4 p-3 rounded-2xl glass-panel border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-lg bg-orange-500/20 text-orange-400 text-xs font-extrabold flex items-center justify-center">
+                      #{idx + 1}
+                    </span>
+                    <img src={prod.image_url} alt={prod.name} className="w-10 h-10 rounded-xl object-cover" />
+                    <div>
+                      <h4 className="text-sm font-bold text-white">{prod.name}</h4>
+                      <span className="text-xs text-zinc-400">{prod.views.toLocaleString()} acessos</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Recent Activity */}
         <div className="glass-panel p-6 rounded-3xl border border-white/10">
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-emerald-400" /> Atividade Recente em Tempo Real
+            <Clock className="w-5 h-5 text-emerald-400" /> Atividade Recente
           </h3>
-          <div className="space-y-3">
-            {MOCK_ANALYTICS.recent_activity.map((act, idx) => (
-              <div key={idx} className="p-3 rounded-2xl glass-panel border border-white/5 flex items-start justify-between gap-3 text-xs">
-                <div>
-                  <span className="font-bold text-white block mb-0.5">{act.details}</span>
-                  <span className="text-zinc-500">{act.time}</span>
+          {metrics.recent_activity.length === 0 ? (
+            <div className="text-center py-10 border border-dashed border-white/10 rounded-2xl p-4">
+              <Info className="w-8 h-8 text-zinc-500 mx-auto mb-2" />
+              <p className="text-xs text-zinc-400">Nenhuma atividade recente registrada.</p>
+              <span className="text-[11px] text-zinc-500 block mt-1">Os acessos dos clientes aparecerão aqui em tempo real.</span>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {metrics.recent_activity.map((act, idx) => (
+                <div key={idx} className="p-3 rounded-2xl glass-panel border border-white/5 flex items-start justify-between gap-3 text-xs">
+                  <div>
+                    <span className="font-bold text-white block mb-0.5">{act.details}</span>
+                    <span className="text-zinc-500">{act.time}</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-white/5 text-zinc-400 text-[10px] uppercase font-semibold">
+                    {act.type}
+                  </span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-white/5 text-zinc-400 text-[10px] uppercase font-semibold">
-                  {act.type}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
