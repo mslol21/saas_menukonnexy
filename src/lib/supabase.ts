@@ -15,7 +15,6 @@ export const isSupabaseConfigured = () => {
   );
 };
 
-// Data service layer with automatic fallback to mock data
 export const DataService = {
   async getTenantBySlug(slug: string): Promise<Tenant | null> {
     if (isSupabaseConfigured()) {
@@ -31,6 +30,16 @@ export const DataService = {
         console.warn('Supabase fetch failed, falling back to mock:', err);
       }
     }
+
+    // Check localStorage for newly created tenant
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('konnexy_user_tenant');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.slug === slug) return parsed;
+      }
+    }
+
     const tenant = MOCK_TENANTS.find((t) => t.slug === slug);
     return tenant || MOCK_TENANTS[0];
   },
@@ -45,12 +54,12 @@ export const DataService = {
           .eq('is_active', true)
           .order('sort_order', { ascending: true });
 
-        if (data && !error) return data as Category[];
+        if (data && !error && data.length > 0) return data as Category[];
       } catch (err) {
         console.warn('Supabase fetch failed, falling back to mock:', err);
       }
     }
-    return MOCK_CATEGORIES.filter((c) => c.tenant_id === tenantId || tenantId === 't-1');
+    return MOCK_CATEGORIES;
   },
 
   async getProductsByTenant(tenantId: string): Promise<Product[]> {
@@ -62,12 +71,12 @@ export const DataService = {
           .eq('tenant_id', tenantId)
           .order('sort_order', { ascending: true });
 
-        if (data && !error) return data as Product[];
+        if (data && !error && data.length > 0) return data as Product[];
       } catch (err) {
         console.warn('Supabase fetch failed, falling back to mock:', err);
       }
     }
-    return MOCK_PRODUCTS.filter((p) => p.tenant_id === tenantId || tenantId === 't-1');
+    return MOCK_PRODUCTS;
   },
 
   async recordAnalyticsEvent(tenantId: string, eventType: 'page_view' | 'qr_scan' | 'product_view' | 'whatsapp_click', productId?: string, tableNumber?: number) {
