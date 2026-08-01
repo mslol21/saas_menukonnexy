@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { MasterDashboard } from '@/components/master/MasterDashboard';
 import { Button } from '@/components/ui/Button';
-import { ShieldCheck, Lock, Key, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { ShieldCheck, Lock, Key, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function MasterPage() {
@@ -15,7 +15,6 @@ export default function MasterPage() {
   const [errorMsg, setErrorMsg] = useState<string>('');
 
   useEffect(() => {
-    // Check if master session unlocked or user is registered with master role
     const savedMaster = typeof window !== 'undefined' ? sessionStorage.getItem('konnexy_master_unlocked') : null;
     if (savedMaster === 'true' || profile?.role === 'master') {
       setIsUnlocked(true);
@@ -26,7 +25,6 @@ export default function MasterPage() {
     e.preventDefault();
     setErrorMsg('');
 
-    // Master Credentials Check (Master Admin Super Passcode or Master Role)
     const validEmails = ['master@konnexy.com.br', 'admin@konnexy.com.br', 'mslol21@github.com'];
     const validPasscodes = ['konnexy2026', 'master123', 'admin2026'];
 
@@ -52,17 +50,17 @@ export default function MasterPage() {
 
   if (!isUnlocked) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4 relative font-sans selection:bg-orange-500 selection:text-white">
-        {/* Background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-orange-500/10 to-rose-600/10 blur-[130px] rounded-full pointer-events-none" />
+      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4 relative font-sans selection:bg-amber-500 selection:text-white">
+        {/* Background Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-amber-500/10 via-cyan-500/10 to-transparent blur-[140px] rounded-full pointer-events-none" />
 
-        <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-orange-500/30 shadow-2xl relative z-10">
+        <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-amber-500/30 shadow-2xl relative z-10">
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-600 to-orange-500 flex items-center justify-center text-white mx-auto mb-4 shadow-lg shadow-rose-500/30">
-              <ShieldCheck className="w-7 h-7" />
+            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-amber-500/40 p-0.5 bg-zinc-900 mx-auto mb-4 shadow-xl shadow-amber-500/10">
+              <img src="/konnexy-logo.jpg" alt="Konnexy Menu Logo" className="w-full h-full object-cover rounded-xl" />
             </div>
 
-            <span className="text-[10px] font-black uppercase tracking-widest text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20 inline-block mb-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 inline-block mb-2">
               Segurança Elevada • Super Admin
             </span>
 
@@ -89,7 +87,7 @@ export default function MasterPage() {
                   value={masterEmail}
                   onChange={(e) => setMasterEmail(e.target.value)}
                   placeholder="master@konnexy.com.br"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-orange-500/50"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
                   required
                 />
               </div>
@@ -104,7 +102,7 @@ export default function MasterPage() {
                   value={masterPass}
                   onChange={(e) => setMasterPass(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-orange-500/50"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
                   required
                 />
               </div>
@@ -114,7 +112,7 @@ export default function MasterPage() {
               type="submit"
               variant="primary"
               size="lg"
-              className="w-full font-bold text-base mt-2 shadow-lg shadow-orange-500/20"
+              className="w-full font-bold text-base mt-2 shadow-lg shadow-amber-500/20"
               rightIcon={<ArrowRight className="w-5 h-5" />}
             >
               Desbloquear Painel Master
@@ -123,7 +121,7 @@ export default function MasterPage() {
 
           <div className="mt-6 pt-4 border-t border-white/10 text-center">
             <p className="text-[11px] text-zinc-500">
-              Chave de teste Master Padrão: E-mail <code className="text-orange-400">master@konnexy.com.br</code> • Senha <code className="text-orange-400">konnexy2026</code>
+              Chave Master Padrão: E-mail <code className="text-amber-400">master@konnexy.com.br</code> • Senha <code className="text-amber-400">konnexy2026</code>
             </p>
           </div>
         </div>

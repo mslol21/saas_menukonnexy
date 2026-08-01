@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { UtensilsCrossed, LayoutDashboard, Store, Layers, Package, QrCode, CreditCard, ExternalLink, LogOut } from 'lucide-react';
+import { LayoutDashboard, Store, Layers, Package, QrCode, CreditCard, ExternalLink, LogOut } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -23,14 +23,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, tenan
   return (
     <aside className="w-full lg:w-64 glass-panel border-r border-white/10 p-6 flex flex-col justify-between shrink-0 min-h-[calc(100vh-80px)] rounded-3xl">
       <div>
-        {/* Brand */}
-        <div className="flex items-center gap-2.5 pb-6 mb-6 border-b border-white/10">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-lg">
-            <UtensilsCrossed className="w-5 h-5" />
+        {/* Official Konnexy Brand */}
+        <div className="flex items-center gap-3 pb-6 mb-6 border-b border-white/10">
+          <div className="w-10 h-10 rounded-2xl overflow-hidden border border-amber-500/40 p-0.5 bg-zinc-900 shadow-md shadow-amber-500/10 shrink-0">
+            <img src="/konnexy-logo.jpg" alt="Konnexy Menu Logo" className="w-full h-full object-cover rounded-xl" />
           </div>
           <div>
-            <h3 className="text-base font-extrabold text-white leading-none">Painel Admin</h3>
-            <span className="text-[10px] text-orange-400 font-semibold uppercase tracking-wider">Konnexy Menu</span>
+            <h3 className="text-base font-black text-white leading-none tracking-tight">Painel Admin</h3>
+            <span className="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider block mt-1">Konnexy Menu</span>
           </div>
         </div>
 
@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, tenan
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                 activeTab === item.id
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 font-black shadow-lg shadow-amber-500/20'
                   : 'text-zinc-400 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -58,7 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, tenan
         <Link
           href={`/menu/${tenantSlug}`}
           target="_blank"
-          className="flex items-center justify-between p-3 rounded-xl glass-panel text-xs font-bold text-orange-400 border border-orange-500/30 hover:bg-orange-500/10 transition-colors"
+          className="flex items-center justify-between p-3 rounded-xl glass-panel text-xs font-bold text-amber-400 border border-amber-500/30 hover:bg-amber-500/10 transition-colors"
         >
           <span>Ver Cardápio Público</span>
           <ExternalLink className="w-4 h-4" />

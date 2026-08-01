@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { UtensilsCrossed, ArrowRight, Lock, Mail, Store, AlertCircle } from 'lucide-react';
+import { ArrowRight, Lock, Mail, Store, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -56,13 +56,13 @@ export default function LoginPage() {
     <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4 relative font-sans">
       <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl relative">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-lg shadow-orange-500/30">
-              <UtensilsCrossed className="w-6 h-6" />
+          <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+            <div className="w-14 h-14 rounded-2xl overflow-hidden border border-amber-500/40 p-0.5 bg-zinc-900 shadow-xl shadow-amber-500/10 group-hover:scale-105 transition-transform">
+              <img src="/konnexy-logo.jpg" alt="Konnexy Menu Logo" className="w-full h-full object-cover rounded-xl" />
             </div>
           </Link>
 
-          <h2 className="text-2xl font-black tracking-tight">
+          <h2 className="text-2xl font-black tracking-tight text-white">
             {isRegister ? 'Criar Minha Conta no Konnexy' : 'Acessar Meu Painel'}
           </h2>
           <p className="text-xs text-zinc-400 mt-1">
@@ -87,8 +87,8 @@ export default function LoginPage() {
                   type="text"
                   value={restaurantName}
                   onChange={(e) => setRestaurantName(e.target.value)}
-                  placeholder="Ex: Calixto Burger & Grill"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-orange-500/50"
+                  placeholder="Ex: Bistrô Dourado"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
                   required
                 />
               </div>
@@ -104,7 +104,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@restaurante.com.br"
-                className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-orange-500/50"
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
                 required
               />
             </div>
@@ -119,7 +119,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-orange-500/50"
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
                 required
               />
             </div>
@@ -130,10 +130,10 @@ export default function LoginPage() {
             variant="primary"
             size="lg"
             isLoading={isSubmitting}
-            className="w-full font-bold text-base mt-2"
+            className="w-full font-bold text-base mt-2 shadow-lg shadow-amber-500/20"
             rightIcon={<ArrowRight className="w-5 h-5" />}
           >
-            {isRegister ? 'Criar Conta com Isolamento RLS' : 'Entrar no Meu Painel'}
+            {isRegister ? 'Criar Conta no Konnexy' : 'Entrar no Meu Painel'}
           </Button>
         </form>
 
@@ -141,14 +141,14 @@ export default function LoginPage() {
           {isRegister ? (
             <p>
               Já tem um cardápio cadastrado?{' '}
-              <button onClick={() => setIsRegister(false)} className="text-orange-400 font-bold hover:underline">
+              <button onClick={() => setIsRegister(false)} className="text-amber-400 font-bold hover:underline">
                 Fazer Login
               </button>
             </p>
           ) : (
             <p>
               Ainda não tem conta?{' '}
-              <button onClick={() => setIsRegister(true)} className="text-orange-400 font-bold hover:underline">
+              <button onClick={() => setIsRegister(true)} className="text-amber-400 font-bold hover:underline">
                 Criar Cardápio Grátis
               </button>
             </p>
