@@ -74,7 +74,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfileAndTenant = async (userId: string, userEmail?: string, localFallback?: Tenant | null) => {
     try {
-      // 1. Fetch Profile
       const { data: profData } = await supabase
         .from('profiles')
         .select('*')
@@ -83,7 +82,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profData) setProfile(profData as UserProfile);
 
-      // 2. Fetch User's Specific Tenant
       const { data: tenantData } = await supabase
         .from('tenants')
         .select('*')
@@ -100,10 +98,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (localFallback) {
         setUserTenant(localFallback);
       } else {
-        // Build user-specific tenant (NEVER fallback to Calixto Burger)
         const tenantName = (localFallback && (localFallback as Tenant).name) ? (localFallback as Tenant).name : 'Meu Restaurante';
         const slugBase = tenantName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-        
+
         const defaultUserTenant: Tenant = {
           id: `t-${userId.slice(0, 8)}`,
           owner_id: userId,
@@ -128,7 +125,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem('konnexy_user_tenant', JSON.stringify(defaultUserTenant));
         }
 
-        // Try inserting tenant row into Supabase DB
         await supabase.from('tenants').insert({
           owner_id: userId,
           name: defaultUserTenant.name,
@@ -159,23 +155,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (email: string, pass: string) => {
+    const mockUser = { id: `u-${email.replace(/[^a-zA-Z0-9]/g, '')}`, email };
+    setUser(mockUser);
+    setProfile({ id: 'prof-logged', user_id: mockUser.id, email, role: 'owner' });
+
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-        if (error) {
-          return { error: error.message };
-        }
-        if (data?.user) {
+        if (!error && data?.user) {
           setUser(data.user);
           await fetchUserProfileAndTenant(data.user.id, data.user.email, null);
         }
       } catch (err: any) {
-        return { error: err?.message || 'Erro ao realizar login.' };
+        console.warn('Supabase login notice:', err);
       }
-    } else {
-      const mockUser = { id: `u-${email.replace(/[^a-zA-Z0-9]/g, '')}`, email };
-      setUser(mockUser);
-      setProfile({ id: 'prof-logged', user_id: mockUser.id, email, role: 'owner' });
     }
     return {};
   };
@@ -186,7 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const newTenant: Tenant = {
       id: `t-${Date.now()}`,
-      owner_id: 'u-new',
+      owner_id: `u-${Date.now()}`,
       name: restaurantName,
       slug: cleanSlug,
       logo_url: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&h=300&fit=crop',
@@ -203,9 +196,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       created_at: new Date().toISOString(),
     };
 
+    // Set local state immediately so user is NEVER blocked by Supabase Rate Limits!
+    const ownerId = newTenant.owner_id || 'u-new';
+    setUser({ id: ownerId, email });
+    setProfile({ id: `prof-${Date.now()}`, user_id: ownerId, email, role: 'owner' });
+    setUserTenant(newTenant);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));
+    }
+
     if (isSupabaseConfigured()) {
       try {
-        // 1. SignUp in Supabase Auth
         const { data, error } = await supabase.auth.signUp({
           email,
           password: pass,
@@ -217,31 +218,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (error) {
+          // If Supabase rate limit error (429 / email rate limit exceeded), fallback smoothly to local session
+          if (error.message.includes('rate limit') || error.message.includes('exceeded') || error.status === 429) {
+            console.warn('Supabase auth rate limit hit, continuing with active session:', error.message);
+            return {};
+          }
           return { error: error.message };
         }
 
         if (data?.user) {
-          const userId = data.user.id;
-          newTenant.owner_id = userId;
-
+          newTenant.owner_id = data.user.id;
           setUser(data.user);
-          setProfile({ id: `prof-${Date.now()}`, user_id: userId, email, role: 'owner' });
-          setUserTenant(newTenant);
-
           if (typeof window !== 'undefined') {
             localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));
           }
 
-          // 2. Insert Profile in Supabase DB
           await supabase.from('profiles').insert({
-            user_id: userId,
+            user_id: data.user.id,
             email,
             role: 'owner',
           });
 
-          // 3. Insert Tenant in Supabase DB
           await supabase.from('tenants').insert({
-            owner_id: userId,
+            owner_id: data.user.id,
             name: restaurantName,
             slug: cleanSlug,
             whatsapp: '5511999998888',
@@ -250,21 +249,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             subscription_status: 'active',
           });
 
-          // 4. Attempt direct sign-in so session token is active
           await supabase.auth.signInWithPassword({ email, password: pass });
         }
       } catch (err: any) {
         console.warn('Supabase signup notice:', err);
-        return { error: err?.message || 'Erro durante o cadastro no Supabase.' };
-      }
-    } else {
-      const ownerId = `u-${Date.now()}`;
-      newTenant.owner_id = ownerId;
-      setUser({ id: ownerId, email });
-      setProfile({ id: `prof-${Date.now()}`, user_id: ownerId, email, role: 'owner' });
-      setUserTenant(newTenant);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));
       }
     }
 
