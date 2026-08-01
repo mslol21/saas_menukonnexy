@@ -41,6 +41,9 @@ CREATE TABLE IF NOT EXISTS public.tenants (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Garantir que a coluna owner_id exista caso a tabela tenants já tenha sido criada anteriormente
+ALTER TABLE IF EXISTS public.tenants ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+
 -- 3. TABELA DE CATEGORIAS
 CREATE TABLE IF NOT EXISTS public.categories (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -187,6 +190,18 @@ ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.qr_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.analytics_events ENABLE ROW LEVEL SECURITY;
+
+-- Remover políticas antigas para re-criação sem conflitos
+DROP POLICY IF EXISTS "Leitura pública de cardápios ativos" ON public.tenants;
+DROP POLICY IF EXISTS "Proprietário gerencia seu restaurante" ON public.tenants;
+DROP POLICY IF EXISTS "Permitir inserção de tenant" ON public.tenants;
+DROP POLICY IF EXISTS "Leitura pública de categorias" ON public.categories;
+DROP POLICY IF EXISTS "Proprietário gerencia suas categorias" ON public.categories;
+DROP POLICY IF EXISTS "Leitura pública de produtos" ON public.products;
+DROP POLICY IF EXISTS "Proprietário gerencia seus produtos" ON public.products;
+DROP POLICY IF EXISTS "Proprietário gerencia seus qr_codes" ON public.qr_codes;
+DROP POLICY IF EXISTS "Registro público de analytics" ON public.analytics_events;
+DROP POLICY IF EXISTS "Proprietário visualiza analytics" ON public.analytics_events;
 
 -- Função de apoio para checagem de RLS
 CREATE OR REPLACE FUNCTION public.is_tenant_owner(target_tenant_id UUID)
