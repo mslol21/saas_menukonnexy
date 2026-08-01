@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/master/'],
     },
-    sitemap: 'https://konnexy.com.br/sitemap.xml',
+    sitemap: 'https://konnexymenu.vercel.app/sitemap.xml',
   };
 }
