@@ -101,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUserTenant(localFallback);
       } else {
         // Build user-specific tenant (NEVER fallback to Calixto Burger)
-        const tenantName = localFallback?.name || 'Meu Restaurante';
+        const tenantName = (localFallback && (localFallback as Tenant).name) ? (localFallback as Tenant).name : 'Meu Restaurante';
         const slugBase = tenantName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
         
         const defaultUserTenant: Tenant = {
