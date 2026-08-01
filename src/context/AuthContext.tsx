@@ -156,8 +156,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     // Save in state & localStorage immediately
-    setUser({ id: newTenant.owner_id, email });
-    setProfile({ id: `prof-${Date.now()}`, user_id: newTenant.owner_id, email, role: 'owner' });
+    const ownerId = newTenant.owner_id || 'u-new';
+    setUser({ id: ownerId, email });
+    setProfile({ id: `prof-${Date.now()}`, user_id: ownerId, email, role: 'owner' });
     setUserTenant(newTenant);
     if (typeof window !== 'undefined') {
       localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));

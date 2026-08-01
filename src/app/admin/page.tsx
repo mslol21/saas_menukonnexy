@@ -21,10 +21,11 @@ export default function TenantAdminPage() {
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
 
   useEffect(() => {
-    if (userTenant?.id) {
+    if (userTenant && userTenant.id) {
+      const tenantId = userTenant.id;
       async function loadTenantData() {
-        const cats = await DataService.getCategoriesByTenant(userTenant.id);
-        const prods = await DataService.getProductsByTenant(userTenant.id);
+        const cats = await DataService.getCategoriesByTenant(tenantId);
+        const prods = await DataService.getProductsByTenant(tenantId);
         if (cats.length > 0) setCategories(cats);
         if (prods.length > 0) setProducts(prods);
       }
