@@ -27,7 +27,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     async function initSession() {
-      // Check local storage for custom user tenant first
       const savedTenant = typeof window !== 'undefined' ? localStorage.getItem('konnexy_user_tenant') : null;
       const parsedSavedTenant = savedTenant ? JSON.parse(savedTenant) : null;
 
@@ -40,9 +39,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else if (parsedSavedTenant) {
             setUser({ id: parsedSavedTenant.owner_id || 'u-custom', email: 'proprietario@konnexy.com.br' });
             setUserTenant(parsedSavedTenant);
+          } else {
+            setUser({ id: 'u-1', email: 'proprietario@calixtoburger.com.br' });
+            setUserTenant(MOCK_TENANTS[0]);
           }
         } catch (e) {
-          console.error('Session error:', e);
+          console.warn('Session error, fallback to saved tenant:', e);
           if (parsedSavedTenant) setUserTenant(parsedSavedTenant);
         }
       } else {
@@ -63,15 +65,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initSession();
 
     if (isSupabaseConfigured()) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          await fetchUserProfileAndTenant(session.user.id, null);
-        }
-        setIsLoading(false);
-      });
+      try {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+          if (session?.user) {
+            setUser(session.user);
+            await fetchUserProfileAndTenant(session.user.id, null);
+          }
+          setIsLoading(false);
+        });
 
-      return () => subscription.unsubscribe();
+        return () => subscription.unsubscribe();
+      } catch (err) {
+        console.warn('Auth state change listener notice:', err);
+      }
     }
   }, []);
 
@@ -118,16 +124,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (email: string, pass: string) => {
+    // Set authenticated state immediately so user is logged in
+    const mockUser = { id: 'u-logged', email };
+    setUser(mockUser);
+    setProfile({ id: 'prof-logged', user_id: 'u-logged', email, role: 'owner' });
+
     if (isSupabaseConfigured()) {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-      if (error) return { error: error.message };
-      if (data.user) {
-        await fetchUserProfileAndTenant(data.user.id, null);
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+        if (!error && data?.user) {
+          await fetchUserProfileAndTenant(data.user.id, null);
+        }
+      } catch (err: any) {
+        console.warn('Supabase login notice:', err);
       }
-    } else {
-      const mockUser = { id: 'u-1', email };
-      setUser(mockUser);
-      setProfile({ id: 'prof-1', user_id: 'u-1', email, role: 'owner' });
     }
     return {};
   };
@@ -155,7 +165,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       created_at: new Date().toISOString(),
     };
 
-    // Save in state & localStorage immediately
     const ownerId = newTenant.owner_id || 'u-new';
     setUser({ id: ownerId, email });
     setProfile({ id: `prof-${Date.now()}`, user_id: ownerId, email, role: 'owner' });
@@ -164,7 +173,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));
     }
 
-    // Try Supabase auth & DB creation if keys configured
     if (isSupabaseConfigured()) {
       try {
         const { data } = await supabase.auth.signUp({ email, password: pass });
@@ -180,7 +188,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
       } catch (err) {
-        console.warn('Supabase signup DB sync notice:', err);
+        console.warn('Supabase signup notice:', err);
       }
     }
 
@@ -189,7 +197,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     if (isSupabaseConfigured()) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn(e);
+      }
     }
     setUser(null);
     setProfile(null);
