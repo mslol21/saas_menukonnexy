@@ -5,7 +5,7 @@ import { Tenant } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { ShieldCheck, CreditCard, Sparkles, Check, QrCode, Copy, Send, CheckCircle2, MessageSquare } from 'lucide-react';
+import { ShieldCheck, CreditCard, Sparkles, Check, QrCode, Copy, Send, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface SubscriptionCardProps {
@@ -20,11 +20,10 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
   const pixKey = '+5516991551200';
   const whatsappNumber = '5516991551200';
 
-  const monthlyPrice = 69.0;
-  const annualPrice = 49.0;
-  const totalAnnual = 588.0;
+  const monthlyPrice = 49.90;
+  const annualPrice = 499.90;
 
-  const currentPrice = planType === 'annual' ? totalAnnual : monthlyPrice;
+  const currentPrice = planType === 'annual' ? annualPrice : monthlyPrice;
 
   const handleCopyPix = () => {
     navigator.clipboard.writeText(pixKey);
@@ -46,8 +45,9 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
     const message = `Olá! Realizei o pagamento da assinatura do *Konnexy Menu* via Pix.\n\n` +
       `📌 *Restaurante:* ${tenant.name}\n` +
       `🔗 *Link:* menu.konnexy.com.br/menu/${tenant.slug}\n` +
-      `💳 *Plano Escolhido:* ${planType === 'annual' ? 'Anual (R$ 588,00/ano)' : 'Mensal (R$ 69,00/mês)'}\n\n` +
-      `Estou enviando o comprovante em anexo para ativação/renovação da conta.`;
+      `💳 *Plano Escolhido:* ${planType === 'annual' ? 'Anual (R$ 499,90/ano)' : 'Mensal (R$ 49,90/mês)'}\n` +
+      `💰 *Valor Pago:* R$ ${currentPrice.toFixed(2).replace('.', ',')}\n\n` +
+      `Seguem os dados para confirmação da conta.`;
 
     const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
@@ -59,15 +59,15 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
           <CreditCard className="w-5 h-5 text-orange-400" /> Minha Assinatura Konnexy
         </h2>
-        <p className="text-xs text-zinc-400">Pagamento seguro via Pix com renovação instantânea pelo WhatsApp.</p>
+        <p className="text-xs text-zinc-400">Pagamento seguro via Pix com envio do comprovante para o WhatsApp.</p>
       </div>
 
       {/* Main Subscription Card */}
       <div className="glass-panel p-8 rounded-3xl border border-white/10 relative overflow-hidden space-y-6">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Plano Escolhido</span>
-            <h3 className="text-2xl font-black text-white">Konnexy Pro ({planType === 'annual' ? 'Anual 30% OFF' : 'Mensal'})</h3>
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Plano Atual</span>
+            <h3 className="text-2xl font-black text-white">Konnexy Pro ({planType === 'annual' ? 'Anual 499,90' : 'Mensal 49,90'})</h3>
           </div>
 
           <Badge variant="success" className="px-4 py-1.5 text-xs font-bold uppercase">
@@ -84,7 +84,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
               planType === 'monthly' ? 'bg-orange-500 text-white shadow-md' : 'text-zinc-400 hover:text-white'
             }`}
           >
-            Mensal (R$ 69/mês)
+            Mensal (R$ 49,90)
           </button>
           <button
             type="button"
@@ -93,27 +93,27 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
               planType === 'annual' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md' : 'text-zinc-400 hover:text-white'
             }`}
           >
-            Anual (R$ 49/mês)
+            Anual (R$ 499,90)
           </button>
         </div>
 
         {/* Pricing Info Box */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-white/5 border border-white/10 text-sm text-zinc-300">
           <div>
-            <span className="text-xs text-zinc-400 block mb-0.5">Renovação Próxima</span>
+            <span className="text-xs text-zinc-400 block mb-0.5">Vigência / Renovação</span>
             <span className="font-bold text-white">31 de Dezembro de 2027</span>
           </div>
           <div>
-            <span className="text-xs text-zinc-400 block mb-0.5">Valor da Assinatura Pix</span>
+            <span className="text-xs text-zinc-400 block mb-0.5">Valor do Plano Escolhido</span>
             <span className="font-black text-emerald-400 text-lg">
-              R$ {planType === 'annual' ? '588,00 /ano (R$ 49/mês)' : '69,00 /mês'}
+              R$ {currentPrice.toFixed(2).replace('.', ',')} {planType === 'annual' ? '/ano' : '/mês'}
             </span>
           </div>
         </div>
 
         {/* Benefits */}
         <div className="space-y-2 text-xs text-zinc-300">
-          <p className="font-bold text-zinc-400 uppercase tracking-wider mb-3">Benefícios Inclusos na Sua Assinatura:</p>
+          <p className="font-bold text-zinc-400 uppercase tracking-wider mb-3">Benefícios Inclusos no Seu Estabelecimento:</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" /> Produtos e Categorias Ilimitadas</div>
             <div className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" /> Carrinho com Envio para o WhatsApp</div>
@@ -147,7 +147,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
       >
         <div className="space-y-6 text-center">
           <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center justify-center gap-2">
-            <Sparkles className="w-4 h-4" /> Pagamento rápido via Pix com liberação pelo WhatsApp
+            <Sparkles className="w-4 h-4" /> Pagamento rápido via Pix com liberação no WhatsApp +55 16 99155-1200
           </div>
 
           {/* Pix Key Display */}
@@ -161,21 +161,21 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
                 className="p-2 rounded-lg bg-orange-500/20 hover:bg-orange-500 text-orange-400 hover:text-white transition-all text-xs font-bold flex items-center gap-1"
               >
                 {copiedKey ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                <span>{copiedKey ? 'Copiado!' : 'Copiar'}</span>
+                <span>{copiedKey ? 'Copiado!' : 'Copiar Chave'}</span>
               </button>
             </div>
             <span className="text-[11px] text-zinc-400 block">
-              Valor a pagar: <strong className="text-white">R$ {currentPrice.toFixed(2)}</strong> ({planType === 'annual' ? 'Plano Anual' : 'Plano Mensal'})
+              Valor exato a pagar: <strong className="text-white">R$ {currentPrice.toFixed(2).replace('.', ',')}</strong> ({planType === 'annual' ? 'Plano Anual R$ 499,90' : 'Plano Mensal R$ 49,90'})
             </span>
           </div>
 
           {/* Instructions Steps */}
           <div className="text-left space-y-2 text-xs text-zinc-300 glass-panel p-5 rounded-2xl border border-white/10">
-            <h4 className="font-bold text-white uppercase tracking-wider mb-2">Instruções para Ativação:</h4>
+            <h4 className="font-bold text-white uppercase tracking-wider mb-2">Passo a Passo para Liberação:</h4>
             <ol className="space-y-2 list-decimal list-inside text-zinc-400">
-              <li>Abra o aplicativo do seu banco e selecione a opção **Pix (Transferência por Telefone)**.</li>
-              <li>Insira a chave **{pixKey}** e confirme o valor de **R$ {currentPrice.toFixed(2)}**.</li>
-              <li>Após concluir o pagamento, clique no botão abaixo para **Enviar o Comprovante no WhatsApp**.</li>
+              <li>Abra o app do seu banco e selecione **Pix (Transferência por Telefone)**.</li>
+              <li>Insira a chave **{pixKey}** e informe o valor de **R$ {currentPrice.toFixed(2).replace('.', ',')}**.</li>
+              <li>Após o pagamento, clique no botão abaixo para **Enviar o Comprovante no WhatsApp**.</li>
             </ol>
           </div>
 

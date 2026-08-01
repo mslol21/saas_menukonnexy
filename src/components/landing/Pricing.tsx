@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Check, Sparkles, Zap, ArrowRight } from 'lucide-react';
+import { Check, Sparkles, ArrowRight } from 'lucide-react';
 
 export const Pricing: React.FC = () => {
   const [isAnnual, setIsAnnual] = useState(true);
@@ -32,7 +32,7 @@ export const Pricing: React.FC = () => {
                 !isAnnual ? 'bg-orange-500 text-white shadow-md' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Mensal
+              Mensal (R$ 49,90)
             </button>
             <button
               onClick={() => setIsAnnual(true)}
@@ -40,9 +40,9 @@ export const Pricing: React.FC = () => {
                 isAnnual ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <span>Anual</span>
+              <span>Anual (R$ 499,90)</span>
               <span className="text-[10px] bg-white text-orange-600 font-extrabold px-2 py-0.5 rounded-full uppercase">
-                30% OFF
+                Economia Especial
               </span>
             </button>
           </div>
@@ -70,12 +70,12 @@ export const Pricing: React.FC = () => {
             {/* Price Display */}
             <div className="flex items-baseline gap-2 mb-8">
               <span className="text-5xl font-extrabold text-white">
-                R$ {isAnnual ? '49' : '69'}
+                R$ {isAnnual ? '499,90' : '49,90'}
               </span>
-              <span className="text-zinc-400 font-medium">/mês</span>
+              <span className="text-zinc-400 font-medium">{isAnnual ? '/ano' : '/mês'}</span>
               {isAnnual && (
-                <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20 ml-2">
-                  Faturado R$ 588 /ano
+                <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20 ml-2">
+                  Economize pagando anualmente
                 </span>
               )}
             </div>
@@ -92,7 +92,7 @@ export const Pricing: React.FC = () => {
                 'Upload & Otimização WebP Automática',
                 'Painel de Métricas & Relatórios',
                 'Zero Taxas sobre Vendas',
-                'Suporte Prioritário VIP',
+                'Suporte Prioritário VIP no WhatsApp (+55 16 99155-1200)',
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0">
@@ -103,12 +103,12 @@ export const Pricing: React.FC = () => {
               ))}
             </ul>
 
-            <Link href="/admin">
+            <Link href="/login">
               <Button variant="primary" size="lg" className="w-full text-base font-bold" rightIcon={<ArrowRight className="w-5 h-5" />}>
-                Começar Teste Grátis de 7 Dias
+                Criar Meu Cardápio Agora
               </Button>
             </Link>
-            <p className="text-center text-xs text-zinc-500 mt-4">Sem necessidade de cartão de crédito para testar.</p>
+            <p className="text-center text-xs text-zinc-500 mt-4">Pagamento seguro via Pix com ativação imediata.</p>
           </motion.div>
         </div>
       </div>

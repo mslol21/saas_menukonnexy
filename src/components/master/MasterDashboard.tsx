@@ -113,7 +113,7 @@ export const MasterDashboard: React.FC = () => {
   };
 
   const totalActive = tenants.filter((t) => t.subscription_status === 'active').length;
-  const totalRevenue = totalActive * 49;
+  const totalRevenue = totalActive * 49.90;
 
   const colorOptions = [
     { label: 'Laranja Konnexy', hex: '#FF5722' },
