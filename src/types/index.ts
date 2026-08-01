@@ -27,8 +27,18 @@ export interface TenantThemeConfig {
   style: 'glass' | 'minimal' | 'vibrant';
 }
 
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  email: string;
+  full_name?: string;
+  role: 'owner' | 'admin' | 'master';
+  created_at?: string;
+}
+
 export interface Tenant {
   id: string;
+  owner_id?: string;
   name: string;
   slug: string;
   logo_url: string;
