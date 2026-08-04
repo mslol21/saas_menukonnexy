@@ -1,0 +1,347 @@
+import { Category, Product, TenantThemeConfig } from '@/types';
+
+export interface SectorTemplate {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  theme: TenantThemeConfig;
+  defaultLogo: string;
+  defaultBanner: string;
+  categories: Array<{ name: string; slug: string; sort_order: number }>;
+  products: Array<{
+    name: string;
+    slug: string;
+    category_slug: string;
+    description: string;
+    price: number;
+    promo_price?: number;
+    image_url: string;
+    ingredients?: string[];
+    filters?: string[];
+    is_bestseller?: boolean;
+    is_featured?: boolean;
+  }>;
+}
+
+export const SECTOR_TEMPLATES: SectorTemplate[] = [
+  {
+    id: 'hamburgueria',
+    name: 'Hamburgueria Artesanal',
+    icon: '🍔',
+    description: 'Ideal para hamburguerias gourmet, smash burgers, porções crocantes e milkshakes.',
+    theme: { primary_color: '#FF5722', mode: 'dark', style: 'glass' },
+    defaultLogo: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&h=300&fit=crop',
+    defaultBanner: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&h=500&fit=crop',
+    categories: [
+      { name: '🔥 Mais Vendidos', slug: 'mais-vendidos', sort_order: 1 },
+      { name: '🍔 Burgers Grelhados', slug: 'burgers-grelhados', sort_order: 2 },
+      { name: '🍟 Porções & Acompanhamentos', slug: 'porcoes', sort_order: 3 },
+      { name: '🥤 Shakes & Bebidas', slug: 'shakes', sort_order: 4 },
+      { name: '🍰 Sobremesas Artesanais', slug: 'sobremesas', sort_order: 5 },
+    ],
+    products: [
+      {
+        name: 'Supreme Bacon Burger',
+        slug: 'supreme-bacon-burger',
+        category_slug: 'mais-vendidos',
+        description: 'Blend Angus 180g grelhado no fogo, triplo cheddar fatiado, bacon crocante em lenha e maionese artesanal.',
+        price: 42.90,
+        promo_price: 36.90,
+        image_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&fit=crop',
+        ingredients: ['Blend Angus 180g', 'Triple Cheddar', 'Bacon crocante', 'Pão Brioche'],
+        filters: ['artesanal', 'premium'],
+        is_bestseller: true,
+        is_featured: true,
+      },
+      {
+        name: 'Smash Double Trufado',
+        slug: 'smash-double-trufado',
+        category_slug: 'burgers-grelhados',
+        description: '2 discos de smash 90g com queijo emmental derretido, maionese de trufas brancas e picles da casa.',
+        price: 38.00,
+        image_url: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=800&fit=crop',
+        ingredients: ['2x Smash 90g', 'Queijo Emmental', 'Maionese trufada', 'Picles artesanal'],
+        filters: ['artesanal'],
+        is_bestseller: true,
+      },
+      {
+        name: 'Batata Rústica Trufada',
+        slug: 'batata-rustica-trufada',
+        category_slug: 'porcoes',
+        description: 'Batatas com casca fritas na hora, azeite de trufas brancas, parmesão 24 meses e alecrim.',
+        price: 28.90,
+        image_url: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800&fit=crop',
+        filters: ['sem_gluten', 'artesanal'],
+      },
+      {
+        name: 'Milkshake Nutella Supremo',
+        slug: 'milkshake-nutella-supremo',
+        category_slug: 'shakes',
+        description: 'Gelato artesanal de baunilha, Nutella pura, Leite Ninho e topo generoso de chantilly.',
+        price: 26.00,
+        image_url: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=800&fit=crop',
+        is_bestseller: true,
+      },
+    ],
+  },
+  {
+    id: 'pizzaria',
+    name: 'Pizzaria & Forno a Lenha',
+    icon: '🍕',
+    description: 'Cardápio para pizzarias tradicionais, fornos napolitanos, bordas recheadas e brotos doces.',
+    theme: { primary_color: '#E11D48', mode: 'dark', style: 'glass' },
+    defaultLogo: 'https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=300&h=300&fit=crop',
+    defaultBanner: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200&h=500&fit=crop',
+    categories: [
+      { name: '🔥 Pizzas Tradicionais', slug: 'pizzas-tradicionais', sort_order: 1 },
+      { name: '⭐ Especiais Gourmet', slug: 'especiais-gourmet', sort_order: 2 },
+      { name: '🍫 Brotos Doces', slug: 'brotos-doces', sort_order: 3 },
+      { name: '🍷 Vinhos & Bebidas', slug: 'vinhos-bebidas', sort_order: 4 },
+      { name: '🥖 Entradas & Crostinis', slug: 'entradas', sort_order: 5 },
+    ],
+    products: [
+      {
+        name: 'Pizza Margherita Di Bufala',
+        slug: 'pizza-margherita-di-bufala',
+        category_slug: 'pizzas-tradicionais',
+        description: 'Molho de tomate pelati italiano, muçarela de búfala fresca, manjericão gigante e azeite extravirgem.',
+        price: 69.90,
+        image_url: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&fit=crop',
+        ingredients: ['Massa Fermentação Natural 48h', 'Muçarela de Búfala', 'Tomate Pelati', 'Manjericão'],
+        filters: ['vegetariano', 'artesanal'],
+        is_bestseller: true,
+        is_featured: true,
+      },
+      {
+        name: 'Pizza Pepperoni Supreme',
+        slug: 'pizza-pepperoni-supreme',
+        category_slug: 'pizzas-tradicionais',
+        description: 'Molho de tomate artesanal, bastante muçarela especial, fatias de pepperoni crocante e oregano selvagem.',
+        price: 74.90,
+        promo_price: 64.90,
+        image_url: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=800&fit=crop',
+        is_bestseller: true,
+      },
+      {
+        name: 'Pizza Doce Nutella com Morango',
+        slug: 'pizza-doce-nutella-morango',
+        category_slug: 'brotos-doces',
+        description: 'Broto com massa crocante coberta com camada alta de Nutella pura e morangos frescos fatiados.',
+        price: 49.90,
+        image_url: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&fit=crop',
+        is_featured: true,
+      },
+    ],
+  },
+  {
+    id: 'sushibar',
+    name: 'Japonês & Sushi Bar',
+    icon: '🍣',
+    description: 'Perfeito para restaurantes japoneses, temakerias, sushi bars e combinados omakase.',
+    theme: { primary_color: '#06B6D4', mode: 'dark', style: 'glass' },
+    defaultLogo: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=300&h=300&fit=crop',
+    defaultBanner: 'https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=1200&h=500&fit=crop',
+    categories: [
+      { name: '🍱 Combinados Omakase', slug: 'combinados', sort_order: 1 },
+      { name: '🍣 Sashes & Niguiris', slug: 'sashimis-niguiris', sort_order: 2 },
+      { name: '🥢 Temakis Especiais', slug: 'temakis', sort_order: 3 },
+      { name: '🔥 Hot Rolls & Uramakis', slug: 'hot-rolls', sort_order: 4 },
+      { name: '🍶 Saquês & Drinks', slug: 'saques-drinks', sort_order: 5 },
+    ],
+    products: [
+      {
+        name: 'Combinado Omakase (30 Peças)',
+        slug: 'combinado-omakase-30',
+        category_slug: 'combinados',
+        description: '10 Sashimis de Salmão, 6 Niguiris Salmão Trufado, 8 Uramakis Filadélfia e 6 Dyo Trufados com Ovas.',
+        price: 119.90,
+        promo_price: 99.90,
+        image_url: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&fit=crop',
+        ingredients: ['Salmão fresco fresco', 'Azeite trufado', 'Flor de sal', 'Cream Cheese'],
+        filters: ['premium', 'sem_gluten'],
+        is_bestseller: true,
+        is_featured: true,
+      },
+      {
+        name: 'Temaki Salmão Crispy com Cream Cheese',
+        slug: 'temaki-salmao-crispy',
+        category_slug: 'temakis',
+        description: 'Nori crocante recheado com salmão em cubos, bastante cream cheese e crispy de couve ou alho-poró.',
+        price: 36.90,
+        image_url: 'https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?w=800&fit=crop',
+        is_bestseller: true,
+      },
+      {
+        name: 'Hot Roll Ebi Tempura com Tarê',
+        slug: 'hot-roll-ebi-tempura',
+        category_slug: 'hot-rolls',
+        description: '8 peças de sushi empanado e frito na hora, recheado com camarão e cream cheese, finalizado com molho tarê.',
+        price: 42.00,
+        image_url: 'https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=800&fit=crop',
+      },
+    ],
+  },
+  {
+    id: 'cafeteria',
+    name: 'Cafeteria & Confeitaria Fine',
+    icon: '☕',
+    description: 'Para cafeterias de especialidade, boulangeries, docerias finas e casas de chá.',
+    theme: { primary_color: '#B8860B', mode: 'dark', style: 'glass' },
+    defaultLogo: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&h=300&fit=crop',
+    defaultBanner: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=1200&h=500&fit=crop',
+    categories: [
+      { name: '☕ Cafés de Especialidade', slug: 'cafes-especiais', sort_order: 1 },
+      { name: '🥐 Croissants & Salgados', slug: 'croissants-salgados', sort_order: 2 },
+      { name: '🍰 Tortas & Doces Finos', slug: 'tortas-doces', sort_order: 3 },
+      { name: '🧋 Bebidas Geladas & Frappés', slug: 'bebidas-geladas', sort_order: 4 },
+    ],
+    products: [
+      {
+        name: 'Cappuccino Trufado com Avelã',
+        slug: 'cappuccino-trufado-avela',
+        category_slug: 'cafes-especiais',
+        description: 'Espresso 100% Arábica, leite vaporizado aveludado, borda de Nutella pura e cacau em pó 70%.',
+        price: 18.90,
+        image_url: 'https://images.unsplash.com/photo-1534778101976-62847782c213?w=800&fit=crop',
+        ingredients: ['Espresso Arábica 85+ pts', 'Leite vaporizado', 'Nutella', 'Cacau 70%'],
+        filters: ['artesanal', 'premium'],
+        is_bestseller: true,
+        is_featured: true,
+      },
+      {
+        name: 'Croissant Francês Brie com Mel',
+        slug: 'croissant-brie-mel',
+        category_slug: 'croissants-salgados',
+        description: 'Croissant folheado com manteiga francesa, recheado com queijo brie derretido e fio de mel de floraranjeira.',
+        price: 26.90,
+        image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=800&fit=crop',
+        is_bestseller: true,
+      },
+      {
+        name: 'Torta Red Velvet Velvet Cream',
+        slug: 'torta-red-velvet',
+        category_slug: 'tortas-doces',
+        description: 'Fatia de bolo aveludado vermelho com recheio denso de cream cheese e favas de baunilha de Madagascar.',
+        price: 24.00,
+        image_url: 'https://images.unsplash.com/photo-1586788680434-30d324b2d46f?w=800&fit=crop',
+        is_featured: true,
+      },
+    ],
+  },
+  {
+    id: 'acaiteria',
+    name: 'Açaíteria & Gelateria',
+    icon: '🍧',
+    description: 'Desenvolvido para açaíterias, sorveterias, taças recheadas e sucos funcionais.',
+    theme: { primary_color: '#8B5CF6', mode: 'dark', style: 'glass' },
+    defaultLogo: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=300&h=300&fit=crop',
+    defaultBanner: 'https://images.unsplash.com/photo-1505394033641-40c6ad1178d7?w=1200&h=500&fit=crop',
+    categories: [
+      { name: '🍧 Copos de Açaí Supremo', slug: 'copos-acai', sort_order: 1 },
+      { name: '🍦 Gelatos & Taças', slug: 'gelatos-tacas', sort_order: 2 },
+      { name: '🍓 Sucos Naturais & Smoothies', slug: 'sucos-smoothies', sort_order: 3 },
+    ],
+    products: [
+      {
+        name: 'Copo Açaí Supremo (500ml)',
+        slug: 'copo-acai-supremo-500ml',
+        category_slug: 'copos-acai',
+        description: 'Açaí puro sem xarope, em camadas com Leite Ninho, morangos frescos, Nutella pura e paçoca crocante.',
+        price: 29.90,
+        promo_price: 24.90,
+        image_url: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=800&fit=crop',
+        ingredients: ['Açaí 100% Puro', 'Leite Ninho', 'Nutella', 'Morango fresco'],
+        filters: ['sem_gluten', 'fit'],
+        is_bestseller: true,
+        is_featured: true,
+      },
+      {
+        name: 'Taça Gelato de Pistache Siciliano',
+        slug: 'taca-gelato-pistache',
+        category_slug: 'gelatos-tacas',
+        description: 'Duas bolas de gelato artesanal de pistache puro, ganache de chocolate branco e pedaços de pistache tostado.',
+        price: 34.00,
+        image_url: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=800&fit=crop',
+        filters: ['artesanal', 'premium'],
+        is_bestseller: true,
+      },
+    ],
+  },
+  {
+    id: 'bar-boteco',
+    name: 'Bar, Boteco & Adega',
+    icon: '🍺',
+    description: 'Para bares, pubs, adegas, gastrobares e casas noturnas com petiscos e drinks.',
+    theme: { primary_color: '#F59E0B', mode: 'dark', style: 'glass' },
+    defaultLogo: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=300&h=300&fit=crop',
+    defaultBanner: 'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1200&h=500&fit=crop',
+    categories: [
+      { name: '🍻 Chopes & Cervejas Trincando', slug: 'chopes-cervejas', sort_order: 1 },
+      { name: '🍸 Drinks da Casa', slug: 'drinks', sort_order: 2 },
+      { name: '🍗 Porções & Petiscos de Boteco', slug: 'porcoes-petiscos', sort_order: 3 },
+      { name: '🍷 Vinhos & Tábua de Frios', slug: 'vinhos-frios', sort_order: 4 },
+    ],
+    products: [
+      {
+        name: 'Porção Costelinha BBQ com Fritas',
+        slug: 'porcao-costelinha-bbq',
+        category_slug: 'porcoes-petiscos',
+        description: 'Costela suína assada lentamente por 6 horas, banhada no molho barbecue artesanal e acompanhada de batatas fritas.',
+        price: 64.90,
+        image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&fit=crop',
+        ingredients: ['Costela Suína 700g', 'Molho Barbecue artesanal', 'Batata frita crocante'],
+        is_bestseller: true,
+        is_featured: true,
+      },
+      {
+        name: 'Drink Gin Tônica de Frutas Vermelhas',
+        slug: 'drink-gin-tonica-frutas-vermelhas',
+        category_slug: 'drinks',
+        description: 'Gin Tanqueray premium, água tônica artesanal, infusão de frutas vermelhas, zimbo e ramo de alecrim.',
+        price: 34.90,
+        image_url: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&fit=crop',
+        is_bestseller: true,
+      },
+    ],
+  },
+  {
+    id: 'saudavel-fit',
+    name: 'Saudável, Fit & Saladeria',
+    icon: '🥗',
+    description: 'Focado em restaurantes funcionais, saladerias, marmitas fit e comida saudável.',
+    theme: { primary_color: '#10B981', mode: 'dark', style: 'glass' },
+    defaultLogo: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=300&fit=crop',
+    defaultBanner: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=1200&h=500&fit=crop',
+    categories: [
+      { name: '🥗 Bowls & Saladas do Chef', slug: 'bowls-saladas', sort_order: 1 },
+      { name: '🌯 Wraps & Sanduíches Leves', slug: 'wraps-sanduiches', sort_order: 2 },
+      { name: '🥤 Sucos Detox & Funcionais', slug: 'sucos-detox', sort_order: 3 },
+      { name: '🍌 Sobremesas Fit Zero Açúcar', slug: 'sobremesas-fit', sort_order: 4 },
+    ],
+    products: [
+      {
+        name: 'Poke Bowl Salmão com Avocado',
+        slug: 'poke-bowl-salmao-avocado',
+        category_slug: 'bowls-saladas',
+        description: 'Cubes de salmão fresco marinado, arroz shari integral, avocado fatiado, edamame, manga e molho ponzu especial.',
+        price: 46.90,
+        image_url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&fit=crop',
+        ingredients: ['Salmão Marinado', 'Avocado', 'Arroz Integral', 'Edamame', 'Molho Ponzu'],
+        filters: ['fit', 'sem_gluten', 'sem_lactose'],
+        is_bestseller: true,
+        is_featured: true,
+      },
+      {
+        name: 'Wrap de Frango Grelhado com Homus',
+        slug: 'wrap-frango-homus',
+        category_slug: 'wraps-sanduiches',
+        description: 'Massa folhada integral, peito de frango grelhado desfiado, homus de grão-de-bico, alface, tomate e azeite.',
+        price: 29.90,
+        image_url: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?w=800&fit=crop',
+        filters: ['fit', 'sem_lactose'],
+        is_bestseller: true,
+      },
+    ],
+  },
+];

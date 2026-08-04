@@ -6,13 +6,16 @@ import { Tenant, TenantThemeConfig } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { ShieldCheck, Users, DollarSign, Store, Palette, Lock, CheckCircle2, Sun, Moon, Sparkles, RefreshCw } from 'lucide-react';
+import { ShieldCheck, Users, DollarSign, Store, Palette, Lock, CheckCircle2, Sun, Moon, Sparkles, RefreshCw, FolderPlus, Layers, Package } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { SECTOR_TEMPLATES, SectorTemplate } from '@/lib/templates';
 
 export const MasterDashboard: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isLoadingTenants, setIsLoadingTenants] = useState<boolean>(true);
   const [selectedTenantForTheme, setSelectedTenantForTheme] = useState<Tenant | null>(null);
+  const [selectedTenantForTemplate, setSelectedTenantForTemplate] = useState<Tenant | null>(null);
+
   const [themeConfig, setThemeConfig] = useState<TenantThemeConfig>({
     primary_color: '#FF5722',
     mode: 'dark',
@@ -38,7 +41,6 @@ export const MasterDashboard: React.FC = () => {
       }
     }
 
-    // Check localStorage for local tenant if no Supabase tenants found
     const savedLocal = typeof window !== 'undefined' ? localStorage.getItem('konnexy_user_tenant') : null;
     if (savedLocal) {
       const parsed = JSON.parse(savedLocal);
@@ -112,17 +114,92 @@ export const MasterDashboard: React.FC = () => {
     alert(`Tema do restaurante "${updatedTenant.name}" atualizado com sucesso pelo Super Admin!`);
   };
 
+  const handleApplySectorTemplate = async (template: SectorTemplate) => {
+    if (!selectedTenantForTemplate) return;
+
+    const tenantId = selectedTenantForTemplate.id;
+    const updatedTenant: Tenant = {
+      ...selectedTenantForTemplate,
+      logo_url: template.defaultLogo,
+      banner_url: template.defaultBanner,
+      theme_config: template.theme,
+    };
+
+    setTenants((prev) => prev.map((t) => (t.id === tenantId ? updatedTenant : t)));
+
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('konnexy_user_tenant');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.id === tenantId) {
+          localStorage.setItem('konnexy_user_tenant', JSON.stringify(updatedTenant));
+        }
+      }
+    }
+
+    // Insert categories & products in Supabase
+    if (isSupabaseConfigured()) {
+      try {
+        // Update Tenant Info & Theme
+        await supabase.from('tenants').update({
+          theme_config: template.theme,
+          logo_url: template.defaultLogo,
+          banner_url: template.defaultBanner,
+        }).eq('id', tenantId);
+
+        // Delete old categories and products for clean template apply
+        await supabase.from('categories').delete().eq('tenant_id', tenantId);
+
+        for (const cat of template.categories) {
+          const { data: insertedCat } = await supabase.from('categories').insert({
+            tenant_id: tenantId,
+            name: cat.name,
+            slug: cat.slug,
+            sort_order: cat.sort_order,
+            is_active: true,
+          }).select().single();
+
+          if (insertedCat) {
+            const catProducts = template.products.filter((p) => p.category_slug === cat.slug);
+            for (const prod of catProducts) {
+              await supabase.from('products').insert({
+                tenant_id: tenantId,
+                category_id: insertedCat.id,
+                name: prod.name,
+                slug: prod.slug,
+                description: prod.description,
+                price: prod.price,
+                promo_price: prod.promo_price || null,
+                image_url: prod.image_url,
+                ingredients: prod.ingredients || [],
+                filters: prod.filters || [],
+                is_bestseller: prod.is_bestseller || false,
+                is_featured: prod.is_featured || false,
+                is_available: true,
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to apply template in Supabase:', err);
+      }
+    }
+
+    setSelectedTenantForTemplate(null);
+    alert(`Template de nicho "${template.name}" aplicado com sucesso para o restaurante "${updatedTenant.name}" pelo Super Admin!`);
+  };
+
   const totalActive = tenants.filter((t) => t.subscription_status === 'active').length;
   const totalRevenue = totalActive * 49.90;
 
   const colorOptions = [
     { label: 'Laranja Konnexy', hex: '#FF5722' },
     { label: 'Vermelho Ruby', hex: '#E11D48' },
+    { label: 'Ciano Elétrico', hex: '#06B6D4' },
+    { label: 'Dourado Nobre', hex: '#B8860B' },
+    { label: 'Roxo Açaí', hex: '#8B5CF6' },
     { label: 'Verde Esmeralda', hex: '#10B981' },
-    { label: 'Azul Elétrico', hex: '#3B82F6' },
-    { label: 'Roxo Neon', hex: '#8B5CF6' },
-    { label: 'Âmbar Dourado', hex: '#F59E0B' },
-    { label: 'Rosa Choque', hex: '#EC4899' },
+    { label: 'Âmbar Boteco', hex: '#F59E0B' },
   ];
 
   return (
@@ -131,10 +208,10 @@ export const MasterDashboard: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-6 flex-wrap gap-4">
           <div>
-            <span className="text-xs font-bold text-orange-500 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5 mb-1">
               <ShieldCheck className="w-4 h-4" /> Painel Master Super Admin
             </span>
-            <h1 className="text-3xl font-black">Gestão Global & Personalização da Plataforma</h1>
+            <h1 className="text-3xl font-black">Gestão Global & Personalização de Cardápios</h1>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -145,7 +222,7 @@ export const MasterDashboard: React.FC = () => {
               <RefreshCw className={`w-4 h-4 ${isLoadingTenants ? 'animate-spin' : ''}`} />
               <span>Atualizar</span>
             </button>
-            <Badge variant="primary" className="py-1.5 px-3 text-xs uppercase font-extrabold">
+            <Badge variant="primary" className="py-1.5 px-3 text-xs uppercase font-extrabold bg-amber-500 text-zinc-950 border-amber-400">
               Ambiente Exclusivo Master
             </Badge>
           </div>
@@ -156,7 +233,7 @@ export const MasterDashboard: React.FC = () => {
           <div className="glass-panel p-6 rounded-3xl border border-white/10">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold text-zinc-400 uppercase">Restaurantes Cadastrados</span>
-              <Store className="w-5 h-5 text-orange-400" />
+              <Store className="w-5 h-5 text-amber-400" />
             </div>
             <span className="text-4xl font-black text-white">{tenants.length}</span>
             <span className="text-xs text-emerald-400 font-semibold block mt-1">● Conectado ao Supabase</span>
@@ -176,7 +253,7 @@ export const MasterDashboard: React.FC = () => {
               <span className="text-xs font-bold text-zinc-400 uppercase">Faturamento Estimado (MRR)</span>
               <DollarSign className="w-5 h-5 text-amber-400" />
             </div>
-            <span className="text-4xl font-black text-emerald-400">R$ {totalRevenue.toLocaleString()},00</span>
+            <span className="text-4xl font-black text-emerald-400">R$ {totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
             <span className="text-xs text-zinc-400 block mt-1">Recorrência mensal ativa</span>
           </div>
         </div>
@@ -184,7 +261,7 @@ export const MasterDashboard: React.FC = () => {
         {/* Tenant Management Table */}
         <div className="glass-panel rounded-3xl border border-white/10 p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white">Clientes Cadastrados no Banco de Dados</h3>
+            <h3 className="text-lg font-bold text-white">Clientes & Personalização Exclusiva Master</h3>
           </div>
 
           <div className="overflow-x-auto">
@@ -211,13 +288,13 @@ export const MasterDashboard: React.FC = () => {
                   {tenants.map((t) => (
                     <tr key={t.id} className="hover:bg-white/5 transition-colors">
                       <td className="p-4 font-bold text-white flex items-center gap-3">
-                        <img src={t.logo_url} alt={t.name} className="w-9 h-9 rounded-xl object-cover border border-orange-500/50" />
+                        <img src={t.logo_url} alt={t.name} className="w-9 h-9 rounded-xl object-cover border border-amber-500/50" />
                         <div>
                           <span>{t.name}</span>
                           <span className="text-xs text-zinc-500 block">{t.phone || '(11) 99999-8888'}</span>
                         </div>
                       </td>
-                      <td className="p-4 text-xs font-mono text-orange-400">/menu/{t.slug}</td>
+                      <td className="p-4 text-xs font-mono text-amber-400">/menu/{t.slug}</td>
                       <td className="p-4">
                         <div className="flex items-center gap-2">
                           <span
@@ -237,6 +314,13 @@ export const MasterDashboard: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-4 text-right space-x-2">
+                        <button
+                          onClick={() => setSelectedTenantForTemplate(t)}
+                          className="px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 text-xs font-bold inline-flex items-center gap-1.5"
+                        >
+                          <FolderPlus className="w-3.5 h-3.5" /> Aplicar Template de Nicho
+                        </button>
+
                         <button
                           onClick={() => handleOpenThemeModal(t)}
                           className="px-3 py-1.5 rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30 text-xs font-bold inline-flex items-center gap-1.5"
@@ -264,7 +348,43 @@ export const MasterDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Master Theme Customizer Modal */}
+      {/* Modal 1: Apply Sector Template (Exclusivo Master) */}
+      <Modal
+        isOpen={!!selectedTenantForTemplate}
+        onClose={() => setSelectedTenantForTemplate(null)}
+        title={`📂 Aplicar Cardápio de Nicho: ${selectedTenantForTemplate?.name}`}
+        maxWidth="lg"
+      >
+        <div className="space-y-6">
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold flex items-center gap-2">
+            <Sparkles className="w-4 h-4 shrink-0" />
+            <span>Selecione o modelo comercial para pré-carregar as categorias, produtos e paleta de cores para esta conta.</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1">
+            {SECTOR_TEMPLATES.map((tmpl) => (
+              <div
+                key={tmpl.id}
+                onClick={() => handleApplySectorTemplate(tmpl)}
+                className="p-4 rounded-2xl glass-panel border border-white/10 hover:border-amber-500/50 hover:bg-white/5 cursor-pointer transition-all space-y-2 group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">{tmpl.icon}</span>
+                  <span className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: tmpl.theme.primary_color }} />
+                </div>
+                <h4 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">{tmpl.name}</h4>
+                <p className="text-xs text-zinc-400 leading-relaxed">{tmpl.description}</p>
+                <div className="pt-2 flex items-center justify-between text-[11px] text-zinc-500 border-t border-white/5">
+                  <span>{tmpl.categories.length} Categorias</span>
+                  <span>{tmpl.products.length} Pratos pré-cadastrados</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal 2: Master Theme Customizer */}
       <Modal
         isOpen={!!selectedTenantForTheme}
         onClose={() => setSelectedTenantForTheme(null)}
@@ -286,7 +406,7 @@ export const MasterDashboard: React.FC = () => {
                   type="button"
                   onClick={() => setThemeConfig({ ...themeConfig, primary_color: c.hex })}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all ${
-                    themeConfig.primary_color === c.hex ? 'bg-white/10 border-orange-400 shadow-lg scale-105' : 'glass-panel border-white/10 text-zinc-400'
+                    themeConfig.primary_color === c.hex ? 'bg-white/10 border-amber-400 shadow-lg scale-105' : 'glass-panel border-white/10 text-zinc-400'
                   }`}
                 >
                   <span className="w-4 h-4 rounded-full shrink-0 shadow-md" style={{ backgroundColor: c.hex }} />
@@ -304,7 +424,7 @@ export const MasterDashboard: React.FC = () => {
                 type="button"
                 onClick={() => setThemeConfig({ ...themeConfig, mode: 'dark' })}
                 className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 ${
-                  themeConfig.mode === 'dark' ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
+                  themeConfig.mode === 'dark' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
                 }`}
               >
                 <Moon className="w-4 h-4" /> Dark Mode (Escuro Premium)
@@ -313,7 +433,7 @@ export const MasterDashboard: React.FC = () => {
                 type="button"
                 onClick={() => setThemeConfig({ ...themeConfig, mode: 'light' })}
                 className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 ${
-                  themeConfig.mode === 'light' ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
+                  themeConfig.mode === 'light' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
                 }`}
               >
                 <Sun className="w-4 h-4" /> Light Mode (Claro Minimalista)
@@ -329,7 +449,7 @@ export const MasterDashboard: React.FC = () => {
                 type="button"
                 onClick={() => setThemeConfig({ ...themeConfig, style: 'glass' })}
                 className={`p-2.5 rounded-xl border text-xs font-bold ${
-                  themeConfig.style === 'glass' ? 'bg-orange-500 text-white border-orange-400' : 'glass-panel text-zinc-400 border-white/10'
+                  themeConfig.style === 'glass' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400' : 'glass-panel text-zinc-400 border-white/10'
                 }`}
               >
                 Glassmorphism
@@ -338,7 +458,7 @@ export const MasterDashboard: React.FC = () => {
                 type="button"
                 onClick={() => setThemeConfig({ ...themeConfig, style: 'minimal' })}
                 className={`p-2.5 rounded-xl border text-xs font-bold ${
-                  themeConfig.style === 'minimal' ? 'bg-orange-500 text-white border-orange-400' : 'glass-panel text-zinc-400 border-white/10'
+                  themeConfig.style === 'minimal' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400' : 'glass-panel text-zinc-400 border-white/10'
                 }`}
               >
                 Minimalista
@@ -347,7 +467,7 @@ export const MasterDashboard: React.FC = () => {
                 type="button"
                 onClick={() => setThemeConfig({ ...themeConfig, style: 'vibrant' })}
                 className={`p-2.5 rounded-xl border text-xs font-bold ${
-                  themeConfig.style === 'vibrant' ? 'bg-orange-500 text-white border-orange-400' : 'glass-panel text-zinc-400 border-white/10'
+                  themeConfig.style === 'vibrant' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400' : 'glass-panel text-zinc-400 border-white/10'
                 }`}
               >
                 Vibrante
