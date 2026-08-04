@@ -52,10 +52,10 @@ export interface Tenant {
   website?: string;
   address: string;
   google_maps_url?: string;
-  opening_hours: TenantOpeningHours;
+  opening_hours?: TenantOpeningHours;
   subscription_status: 'active' | 'suspended' | 'trial' | 'cancelled';
-  subscription_plan: 'monthly' | 'annual';
-  expires_at: string;
+  subscription_plan?: 'monthly' | 'annual';
+  expires_at?: string;
   theme_config: TenantThemeConfig;
   created_at: string;
 }
@@ -81,7 +81,7 @@ export interface Product {
   price: number;
   promo_price?: number;
   image_url: string;
-  gallery: string[];
+  gallery?: string[];
   ingredients: string[];
   weight?: string;
   volume?: string;
@@ -92,8 +92,8 @@ export interface Product {
   sort_order: number;
   is_featured: boolean;
   is_bestseller: boolean;
-  is_new: boolean;
-  is_promo: boolean;
+  is_new?: boolean;
+  is_promo?: boolean;
   filters: FilterTag[];
   created_at?: string;
 }

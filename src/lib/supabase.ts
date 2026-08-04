@@ -136,7 +136,7 @@ export const DataService = {
         sort_order: i + 1,
         is_featured: p.is_featured || false,
         is_bestseller: p.is_bestseller || false,
-        filters: p.filters || [],
+        filters: (p.filters || []) as FilterTag[],
       }));
     };
 
