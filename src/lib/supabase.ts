@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { MOCK_TENANTS, MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_ANALYTICS } from './mock-data';
 import { SECTOR_TEMPLATES } from './templates';
-import { Tenant, Category, Product, AnalyticsSummary } from '@/types';
+import { Tenant, Category, Product, AnalyticsSummary, FilterTag } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
