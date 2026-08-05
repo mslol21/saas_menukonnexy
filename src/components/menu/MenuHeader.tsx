@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Tenant } from '@/types';
-import { MapPin, Phone, Instagram, Clock, Globe, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { MapPin, Instagram, Share2, Sparkles, Flame, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 
 interface MenuHeaderProps {
@@ -25,7 +25,13 @@ export const MenuHeader: React.FC<MenuHeaderProps> = ({ tenant }) => {
 
   return (
     <div className="relative mb-6">
-      {/* Banner */}
+      {/* Top Promotional Offer Banner */}
+      <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-zinc-950 text-xs font-black text-center py-2 px-4 shadow-md flex items-center justify-center gap-2 flex-wrap">
+        <Flame className="w-4 h-4 fill-zinc-950 animate-bounce" />
+        <span>PEDIDO DIRETO SEM TAXAS • Peça direto pelo cardápio digital com envio instantâneo!</span>
+      </div>
+
+      {/* Banner Capa */}
       <div className="h-44 sm:h-64 w-full relative overflow-hidden bg-zinc-900">
         {tenant.banner_url ? (
           <img
@@ -37,7 +43,7 @@ export const MenuHeader: React.FC<MenuHeaderProps> = ({ tenant }) => {
           <div className="w-full h-full bg-gradient-to-r from-orange-600 to-amber-600" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
-        
+
         {/* Share Button Top Right */}
         <button
           onClick={handleShare}
@@ -53,7 +59,7 @@ export const MenuHeader: React.FC<MenuHeaderProps> = ({ tenant }) => {
         <div className="glass-panel p-5 sm:p-8 rounded-3xl border border-white/10 shadow-2xl flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
           <div className="flex gap-4 items-center">
             {/* Logo */}
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-orange-500 bg-zinc-900 shadow-xl shrink-0">
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-amber-500 bg-zinc-900 shadow-xl shrink-0">
               <img
                 src={tenant.logo_url}
                 alt={tenant.name}
@@ -64,7 +70,7 @@ export const MenuHeader: React.FC<MenuHeaderProps> = ({ tenant }) => {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">{tenant.name}</h1>
-                <Badge variant="success" className="text-[10px] px-2 py-0.5">
+                <Badge variant="success" className="text-[10px] px-2.5 py-0.5 font-bold uppercase">
                   ● Aberto Agora
                 </Badge>
               </div>
@@ -78,9 +84,9 @@ export const MenuHeader: React.FC<MenuHeaderProps> = ({ tenant }) => {
                     href={tenant.google_maps_url || '#'}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 hover:text-orange-400 transition-colors"
+                    className="flex items-center gap-1 hover:text-amber-400 transition-colors"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-orange-500" />
+                    <MapPin className="w-3.5 h-3.5 text-amber-500" />
                     <span className="truncate max-w-[200px]">{tenant.address}</span>
                   </a>
                 )}
