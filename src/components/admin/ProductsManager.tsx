@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { Product, Category, FilterTag } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { Plus, Edit2, Trash2, Package, Flame, Sparkles, Check } from 'lucide-react';
+import { Plus, Edit2, Trash2, Package, Upload, Image as ImageIcon } from 'lucide-react';
 import { FILTER_OPTIONS } from '@/lib/mock-data';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface ProductsManagerProps {
   products: Product[];
@@ -21,6 +22,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
   const [prods, setProds] = useState<Product[]>(products);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProd, setEditingProd] = useState<Partial<Product> | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const handleOpenAdd = () => {
     setEditingProd({
@@ -52,6 +54,42 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
       const updated = prods.filter((p) => p.id !== id);
       setProds(updated);
       onUpdateProducts(updated);
+    }
+  };
+
+  const handleProductFileUpload = async (file: File) => {
+    if (!file || !editingProd) return;
+    setIsUploadingImage(true);
+
+    try {
+      if (isSupabaseConfigured()) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `prod-${Date.now()}.${fileExt}`;
+        const { data, error } = await supabase.storage.from('images').upload(fileName, file, { upsert: true });
+
+        if (!error && data) {
+          const { data: publicUrlData } = supabase.storage.from('images').getPublicUrl(fileName);
+          if (publicUrlData?.publicUrl) {
+            setEditingProd({ ...editingProd, image_url: publicUrlData.publicUrl });
+            setIsUploadingImage(false);
+            return;
+          }
+        }
+      }
+
+      // Fallback Data URL reader
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        if (result) {
+          setEditingProd({ ...editingProd, image_url: result });
+        }
+        setIsUploadingImage(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Product image upload error:', err);
+      setIsUploadingImage(false);
     }
   };
 
@@ -106,13 +144,13 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl font-sans">
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Package className="w-5 h-5 text-orange-400" /> Cadastre & Gerencie Pratos
+            <Package className="w-5 h-5 text-amber-400" /> Cadastre & Gerencie Pratos
           </h2>
-          <p className="text-xs text-zinc-400">Adicione imagens, preços, galeria, calorias e marcas promocionais.</p>
+          <p className="text-xs text-zinc-400">Envie fotos do dispositivo ou informe URLs de imagens do seu cardápio.</p>
         </div>
 
         <Button variant="primary" onClick={handleOpenAdd} leftIcon={<Plus className="w-4 h-4" />}>
@@ -128,7 +166,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
               <h4 className="text-sm font-bold text-white truncate">{p.name}</h4>
               <p className="text-xs text-zinc-400 line-clamp-1">{p.description}</p>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-sm font-black text-orange-400">
+                <span className="text-sm font-black text-amber-400">
                   R$ {p.promo_price ? p.promo_price.toFixed(2) : p.price.toFixed(2)}
                 </span>
                 {p.promo_price && <span className="text-xs text-zinc-500 line-through">R$ {p.price.toFixed(2)}</span>}
@@ -156,7 +194,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
                 type="text"
                 value={editingProd?.name || ''}
                 onChange={(e) => setEditingProd({ ...editingProd, name: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10"
+                className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
                 required
               />
             </div>
@@ -165,7 +203,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
               <select
                 value={editingProd?.category_id || ''}
                 onChange={(e) => setEditingProd({ ...editingProd, category_id: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white bg-zinc-900 border border-white/10"
+                className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white bg-zinc-900 border border-white/10 focus:ring-2 focus:ring-amber-500/50"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -180,7 +218,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
               rows={2}
               value={editingProd?.description || ''}
               onChange={(e) => setEditingProd({ ...editingProd, description: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10"
+              className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
 
@@ -192,7 +230,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
                 step="0.01"
                 value={editingProd?.price || 0}
                 onChange={(e) => setEditingProd({ ...editingProd, price: parseFloat(e.target.value) })}
-                className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10"
+                className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
                 required
               />
             </div>
@@ -203,19 +241,45 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
                 step="0.01"
                 value={editingProd?.promo_price || ''}
                 onChange={(e) => setEditingProd({ ...editingProd, promo_price: e.target.value ? parseFloat(e.target.value) : undefined })}
-                className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10"
+                className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">URL da Foto Principal</label>
-            <input
-              type="text"
-              value={editingProd?.image_url || ''}
-              onChange={(e) => setEditingProd({ ...editingProd, image_url: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10"
-            />
+          {/* Product Image Upload or URL */}
+          <div className="space-y-2 pt-2 border-t border-white/10">
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-amber-400" /> Foto do Produto
+            </label>
+
+            <div className="flex items-center gap-3">
+              <img
+                src={editingProd?.image_url || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&fit=crop'}
+                alt="Preview"
+                className="w-14 h-14 rounded-xl object-cover shrink-0 border border-amber-500/50"
+              />
+
+              <div className="flex-1 space-y-1.5">
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-zinc-950 border border-amber-500/40 text-xs font-bold transition-all">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>{isUploadingImage ? 'Enviando...' : 'Enviar Imagem do Dispositivo'}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleProductFileUpload(e.target.files[0])}
+                  />
+                </label>
+
+                <input
+                  type="text"
+                  value={editingProd?.image_url || ''}
+                  onChange={(e) => setEditingProd({ ...editingProd, image_url: e.target.value })}
+                  placeholder="Ou cole a URL da imagem do produto"
+                  className="w-full px-3 py-1.5 rounded-xl glass-panel text-xs text-white border border-white/10"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Filter Tags selector */}
@@ -230,7 +294,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
                     type="button"
                     onClick={() => toggleFilterTag(opt.id)}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${
-                      active ? 'bg-orange-500 text-white border-orange-400' : 'bg-white/5 text-zinc-400 border-white/10'
+                      active ? 'bg-amber-500 text-zinc-950 font-black border-amber-400' : 'bg-white/5 text-zinc-400 border-white/10'
                     }`}
                   >
                     <span>{opt.icon}</span>

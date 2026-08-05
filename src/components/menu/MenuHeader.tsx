@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Tenant } from '@/types';
-import { MapPin, Instagram, Share2, Sparkles, Flame, CheckCircle2 } from 'lucide-react';
+import { MapPin, Instagram, Share2, Flame } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 
 interface MenuHeaderProps {
@@ -23,12 +23,14 @@ export const MenuHeader: React.FC<MenuHeaderProps> = ({ tenant }) => {
     }
   };
 
+  const bannerText = tenant.promo_banner_text || 'PEDIDO DIRETO SEM TAXAS • Peça direto pelo cardápio digital com envio instantâneo!';
+
   return (
     <div className="relative mb-6">
-      {/* Top Promotional Offer Banner */}
+      {/* Top Dynamic Promotional Offer Banner */}
       <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-zinc-950 text-xs font-black text-center py-2 px-4 shadow-md flex items-center justify-center gap-2 flex-wrap">
-        <Flame className="w-4 h-4 fill-zinc-950 animate-bounce" />
-        <span>PEDIDO DIRETO SEM TAXAS • Peça direto pelo cardápio digital com envio instantâneo!</span>
+        <Flame className="w-4 h-4 fill-zinc-950 animate-bounce shrink-0" />
+        <span>{bannerText}</span>
       </div>
 
       {/* Banner Capa */}

@@ -57,6 +57,7 @@ export interface Tenant {
   subscription_plan?: 'monthly' | 'annual';
   expires_at?: string;
   theme_config: TenantThemeConfig;
+  promo_banner_text?: string;
   created_at: string;
 }
 
