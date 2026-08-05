@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { ShieldCheck, Users, DollarSign, Store, Palette, Lock, CheckCircle2, Sun, Moon, Sparkles, RefreshCw, FolderPlus, Layers, Package } from 'lucide-react';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured, DataService } from '@/lib/supabase';
 import { SECTOR_TEMPLATES, SectorTemplate } from '@/lib/templates';
 
 export const MasterDashboard: React.FC = () => {
