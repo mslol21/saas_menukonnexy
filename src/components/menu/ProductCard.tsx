@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { Product } from '@/types';
-import { Badge } from '@/components/ui/Badge';
-import { Plus, Flame, Sparkles, Clock, Users } from 'lucide-react';
+import { Plus, Minus, Flame, Clock } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { FILTER_OPTIONS } from '@/lib/mock-data';
 
@@ -13,17 +12,31 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProduct }) => {
-  const { addItem } = useCart();
+  const { cart, addItem, updateQuantity } = useCart();
+  const cartItem = cart.items.find((i) => i.product.id === product.id);
+  const quantityInCart = cartItem ? cartItem.quantity : 0;
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
     addItem(product, 1);
   };
 
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    addItem(product, 1);
+  };
+
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (quantityInCart > 0) {
+      updateQuantity(product.id, quantityInCart - 1);
+    }
+  };
+
   return (
     <div
       onClick={() => onSelectProduct(product)}
-      className="glass-panel rounded-3xl p-4 border border-white/10 hover:border-orange-500/40 transition-all duration-300 cursor-pointer group flex flex-col sm:flex-row gap-4 relative overflow-hidden"
+      className="glass-panel rounded-3xl p-4 border border-white/10 hover:border-amber-500/40 transition-all duration-300 cursor-pointer group flex flex-col sm:flex-row gap-4 relative overflow-hidden"
     >
       {/* Product Image & Badges */}
       <div className="relative w-full sm:w-40 h-44 sm:h-40 rounded-2xl overflow-hidden bg-zinc-900 shrink-0">
@@ -56,9 +69,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
       {/* Product Info */}
       <div className="flex-1 flex flex-col justify-between">
         <div>
-          {/* Title & Filter Icons */}
+          {/* Title */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base font-bold text-white group-hover:text-orange-400 transition-colors leading-tight">
+            <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition-colors leading-tight">
               {product.name}
             </h3>
           </div>
@@ -98,7 +111,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
           </div>
         </div>
 
-        {/* Price & Quick Add */}
+        {/* Price & Fast Quantity Counter Controls */}
         <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/5">
           <div className="flex items-baseline gap-2">
             <span className="text-lg font-extrabold text-white">
@@ -111,13 +124,36 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
             )}
           </div>
 
-          <button
-            onClick={handleQuickAdd}
-            className="px-3 py-1.5 rounded-xl bg-orange-500/20 hover:bg-orange-500 text-orange-400 hover:text-white border border-orange-500/30 transition-all font-bold text-xs flex items-center gap-1 active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Adicionar</span>
-          </button>
+          {/* Quick Add or Instant Counter */}
+          {quantityInCart > 0 ? (
+            <div className="flex items-center gap-2 p-1 rounded-xl bg-amber-500/20 border border-amber-500/40">
+              <button
+                type="button"
+                onClick={handleDecrement}
+                className="w-7 h-7 rounded-lg bg-zinc-900 text-white flex items-center justify-center hover:bg-zinc-800 transition-colors font-bold text-xs active:scale-95"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-sm font-black text-amber-400 min-w-[20px] text-center">
+                {quantityInCart}
+              </span>
+              <button
+                type="button"
+                onClick={handleIncrement}
+                className="w-7 h-7 rounded-lg bg-amber-500 text-zinc-950 flex items-center justify-center hover:bg-amber-400 transition-colors font-bold text-xs active:scale-95"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleQuickAdd}
+              className="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-zinc-950 border border-amber-500/40 transition-all font-extrabold text-xs flex items-center gap-1.5 active:scale-95 shadow-md shadow-amber-500/10"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Adicionar</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
