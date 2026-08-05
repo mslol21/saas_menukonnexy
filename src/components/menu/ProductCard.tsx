@@ -12,8 +12,8 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProduct }) => {
-  const { cart, addItem, updateQuantity } = useCart();
-  const cartItem = cart.items.find((i) => i.product.id === product.id);
+  const { items, addItem, updateQuantity } = useCart();
+  const cartItem = items.find((i) => i.product.id === product.id);
   const quantityInCart = cartItem ? cartItem.quantity : 0;
 
   const handleQuickAdd = (e: React.MouseEvent) => {
