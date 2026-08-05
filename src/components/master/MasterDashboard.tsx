@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { MOCK_TENANTS } from '@/lib/mock-data';
-import { Tenant, TenantThemeConfig } from '@/types';
+import { Tenant, TenantThemeConfig, FilterTag } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
@@ -133,7 +133,7 @@ export const MasterDashboard: React.FC = () => {
       sort_order: i + 1,
       is_featured: p.is_featured || false,
       is_bestseller: p.is_bestseller || false,
-      filters: p.filters || [],
+      filters: (p.filters || []) as FilterTag[],
     }));
 
     await DataService.saveCategories(tenantId, templateCats);
