@@ -121,6 +121,7 @@ export default function PublicMenuPage() {
         categories={categories}
         activeCategoryId={activeCategoryId}
         onSelectCategory={setActiveCategoryId}
+        primaryColor={tenant.theme_config?.primary_color}
       />
 
       {/* Products Grid */}
@@ -139,6 +140,7 @@ export default function PublicMenuPage() {
               key={prod.id}
               product={prod}
               onSelectProduct={setSelectedProduct}
+              primaryColor={tenant.theme_config?.primary_color}
             />
           ))
         )}

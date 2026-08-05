@@ -9,9 +9,10 @@ import { FILTER_OPTIONS } from '@/lib/mock-data';
 interface ProductCardProps {
   product: Product;
   onSelectProduct: (product: Product) => void;
+  primaryColor?: string;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProduct }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProduct, primaryColor = '#B8860B' }) => {
   const { items, addItem, updateQuantity } = useCart();
   const cartItem = items.find((i) => i.product.id === product.id);
   const quantityInCart = cartItem ? cartItem.quantity : 0;
@@ -124,9 +125,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
             )}
           </div>
 
-          {/* Quick Add or Instant Counter */}
+          {/* Quick Add or Instant Counter using primary color */}
           {quantityInCart > 0 ? (
-            <div className="flex items-center gap-2 p-1 rounded-xl bg-amber-500/20 border border-amber-500/40">
+            <div className="flex items-center gap-2 p-1 rounded-xl bg-white/10 border border-white/20">
               <button
                 type="button"
                 onClick={handleDecrement}
@@ -140,7 +141,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
               <button
                 type="button"
                 onClick={handleIncrement}
-                className="w-7 h-7 rounded-lg bg-amber-500 text-zinc-950 flex items-center justify-center hover:bg-amber-400 transition-colors font-bold text-xs active:scale-95"
+                style={{ backgroundColor: primaryColor }}
+                className="w-7 h-7 rounded-lg text-white flex items-center justify-center transition-colors font-bold text-xs active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
@@ -148,7 +150,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
           ) : (
             <button
               onClick={handleQuickAdd}
-              className="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-zinc-950 border border-amber-500/40 transition-all font-extrabold text-xs flex items-center gap-1.5 active:scale-95 shadow-md shadow-amber-500/10"
+              style={{ backgroundColor: primaryColor }}
+              className="px-3.5 py-2 rounded-xl text-white font-extrabold text-xs flex items-center gap-1.5 active:scale-95 shadow-md hover:brightness-110 transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>Adicionar</span>
