@@ -141,17 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateUserTenant = async (updated: Tenant) => {
     setUserTenant(updated);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('konnexy_user_tenant', JSON.stringify(updated));
-    }
-
-    if (isSupabaseConfigured() && updated.id) {
-      try {
-        await supabase.from('tenants').upsert(updated);
-      } catch (err) {
-        console.error('Failed to sync tenant update to Supabase:', err);
-      }
-    }
+    await DataService.saveTenant(updated);
   };
 
   const login = async (email: string, pass: string) => {

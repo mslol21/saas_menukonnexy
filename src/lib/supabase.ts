@@ -18,6 +18,29 @@ export const isSupabaseConfigured = () => {
 
 export const DataService = {
   async getTenantBySlug(slug: string): Promise<Tenant | null> {
+    // 1. Check local storage by slug first for instant layout updates
+    if (typeof window !== 'undefined') {
+      const savedBySlug = localStorage.getItem(`konnexy_tenant_${slug}`);
+      if (savedBySlug) {
+        try {
+          return JSON.parse(savedBySlug);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      const savedUserTenant = localStorage.getItem('konnexy_user_tenant');
+      if (savedUserTenant) {
+        try {
+          const parsed = JSON.parse(savedUserTenant);
+          if (parsed.slug === slug) return parsed;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    // 2. Check Supabase
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
@@ -29,14 +52,6 @@ export const DataService = {
         if (data && !error) return data as Tenant;
       } catch (err) {
         console.warn('Supabase fetch failed, checking local & mock:', err);
-      }
-    }
-
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('konnexy_user_tenant');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.slug === slug) return parsed;
       }
     }
 
@@ -65,8 +80,36 @@ export const DataService = {
     return MOCK_TENANTS[0];
   },
 
+  async saveTenant(tenant: Tenant): Promise<boolean> {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`konnexy_tenant_${tenant.slug}`, JSON.stringify(tenant));
+      localStorage.setItem(`konnexy_tenant_id_${tenant.id}`, JSON.stringify(tenant));
+
+      const activeUserTenant = localStorage.getItem('konnexy_user_tenant');
+      if (activeUserTenant) {
+        try {
+          const parsed = JSON.parse(activeUserTenant);
+          if (parsed.id === tenant.id || parsed.slug === tenant.slug) {
+            localStorage.setItem('konnexy_user_tenant', JSON.stringify(tenant));
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    if (isSupabaseConfigured() && tenant.id) {
+      try {
+        await supabase.from('tenants').upsert(tenant);
+      } catch (err) {
+        console.error('Failed to sync tenant to Supabase:', err);
+      }
+    }
+
+    return true;
+  },
+
   async getCategoriesByTenant(tenantId: string): Promise<Category[]> {
-    // 1. Check local storage first for immediate persistence
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`konnexy_categories_${tenantId}`);
       if (saved) {
@@ -78,7 +121,6 @@ export const DataService = {
       }
     }
 
-    // 2. Check Supabase
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
@@ -113,12 +155,10 @@ export const DataService = {
   },
 
   async saveCategories(tenantId: string, categories: Category[]): Promise<boolean> {
-    // Save to LocalStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem(`konnexy_categories_${tenantId}`, JSON.stringify(categories));
     }
 
-    // Save to Supabase
     if (isSupabaseConfigured()) {
       try {
         const formatted = categories.map((c) => ({
@@ -135,7 +175,6 @@ export const DataService = {
   },
 
   async getProductsByTenant(tenantId: string): Promise<Product[]> {
-    // 1. Check local storage first for immediate persistence
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`konnexy_products_${tenantId}`);
       if (saved) {
@@ -147,7 +186,6 @@ export const DataService = {
       }
     }
 
-    // 2. Check Supabase
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
@@ -164,7 +202,6 @@ export const DataService = {
 
     if (tenantId === 't-1' || tenantId === 'calixto-burger') return MOCK_PRODUCTS;
 
-    // Match sector templates
     const mapTemplateProducts = (sectorId: string) => {
       const tmpl = SECTOR_TEMPLATES.find((t) => t.id === sectorId);
       if (!tmpl) return [];
@@ -195,12 +232,10 @@ export const DataService = {
   },
 
   async saveProducts(tenantId: string, products: Product[]): Promise<boolean> {
-    // Save to LocalStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem(`konnexy_products_${tenantId}`, JSON.stringify(products));
     }
 
-    // Save to Supabase
     if (isSupabaseConfigured()) {
       try {
         const formatted = products.map((p) => ({

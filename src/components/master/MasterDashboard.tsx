@@ -88,27 +88,7 @@ export const MasterDashboard: React.FC = () => {
     };
 
     setTenants((prev) => prev.map((t) => (t.id === selectedTenantForTheme.id ? updatedTenant : t)));
-
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('konnexy_user_tenant');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.id === updatedTenant.id) {
-          localStorage.setItem('konnexy_user_tenant', JSON.stringify(updatedTenant));
-        }
-      }
-    }
-
-    if (isSupabaseConfigured()) {
-      try {
-        await supabase
-          .from('tenants')
-          .update({ theme_config: themeConfig })
-          .eq('id', selectedTenantForTheme.id);
-      } catch (e) {
-        console.error('Master theme sync error:', e);
-      }
-    }
+    await DataService.saveTenant(updatedTenant);
 
     setSelectedTenantForTheme(null);
     alert(`Tema do restaurante "${updatedTenant.name}" atualizado com sucesso pelo Super Admin!`);
@@ -126,64 +106,38 @@ export const MasterDashboard: React.FC = () => {
     };
 
     setTenants((prev) => prev.map((t) => (t.id === tenantId ? updatedTenant : t)));
+    await DataService.saveTenant(updatedTenant);
 
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('konnexy_user_tenant');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.id === tenantId) {
-          localStorage.setItem('konnexy_user_tenant', JSON.stringify(updatedTenant));
-        }
-      }
-    }
+    // Prepare template categories & products
+    const templateCats = template.categories.map((c, i) => ({
+      id: `cat-${template.id}-${i}`,
+      tenant_id: tenantId,
+      name: c.name,
+      slug: c.slug,
+      sort_order: c.sort_order,
+      is_active: true,
+    }));
 
-    // Insert categories & products in Supabase
-    if (isSupabaseConfigured()) {
-      try {
-        // Update Tenant Info & Theme
-        await supabase.from('tenants').update({
-          theme_config: template.theme,
-          logo_url: template.defaultLogo,
-          banner_url: template.defaultBanner,
-        }).eq('id', tenantId);
+    const templateProds = template.products.map((p, i) => ({
+      id: `prod-${template.id}-${i}`,
+      tenant_id: tenantId,
+      category_id: `cat-${template.id}-${templateCats.find((c) => c.slug === p.category_slug)?.sort_order || 0}`,
+      name: p.name,
+      slug: p.slug,
+      description: p.description,
+      price: p.price,
+      promo_price: p.promo_price,
+      image_url: p.image_url,
+      ingredients: p.ingredients || [],
+      is_available: true,
+      sort_order: i + 1,
+      is_featured: p.is_featured || false,
+      is_bestseller: p.is_bestseller || false,
+      filters: p.filters || [],
+    }));
 
-        // Delete old categories and products for clean template apply
-        await supabase.from('categories').delete().eq('tenant_id', tenantId);
-
-        for (const cat of template.categories) {
-          const { data: insertedCat } = await supabase.from('categories').insert({
-            tenant_id: tenantId,
-            name: cat.name,
-            slug: cat.slug,
-            sort_order: cat.sort_order,
-            is_active: true,
-          }).select().single();
-
-          if (insertedCat) {
-            const catProducts = template.products.filter((p) => p.category_slug === cat.slug);
-            for (const prod of catProducts) {
-              await supabase.from('products').insert({
-                tenant_id: tenantId,
-                category_id: insertedCat.id,
-                name: prod.name,
-                slug: prod.slug,
-                description: prod.description,
-                price: prod.price,
-                promo_price: prod.promo_price || null,
-                image_url: prod.image_url,
-                ingredients: prod.ingredients || [],
-                filters: prod.filters || [],
-                is_bestseller: prod.is_bestseller || false,
-                is_featured: prod.is_featured || false,
-                is_available: true,
-              });
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to apply template in Supabase:', err);
-      }
-    }
+    await DataService.saveCategories(tenantId, templateCats);
+    await DataService.saveProducts(tenantId, templateProds);
 
     setSelectedTenantForTemplate(null);
     alert(`Template de nicho "${template.name}" aplicado com sucesso para o restaurante "${updatedTenant.name}" pelo Super Admin!`);
