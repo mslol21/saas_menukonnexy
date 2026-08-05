@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Tenant, Category, Product } from '@/types';
+import { Category, Product } from '@/types';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { OverviewMetrics } from '@/components/admin/OverviewMetrics';
 import { RestaurantProfileForm } from '@/components/admin/RestaurantProfileForm';
@@ -32,6 +32,20 @@ export default function TenantAdminPage() {
     }
   }, [userTenant]);
 
+  const handleUpdateCategories = async (updatedCategories: Category[]) => {
+    setCategories(updatedCategories);
+    if (userTenant?.id) {
+      await DataService.saveCategories(userTenant.id, updatedCategories);
+    }
+  };
+
+  const handleUpdateProducts = async (updatedProducts: Product[]) => {
+    setProducts(updatedProducts);
+    if (userTenant?.id) {
+      await DataService.saveProducts(userTenant.id, updatedProducts);
+    }
+  };
+
   if (isLoading || !userTenant) {
     return (
       <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-6">
@@ -55,8 +69,8 @@ export default function TenantAdminPage() {
         <main className="flex-1 w-full glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 min-h-[calc(100vh-80px)]">
           {activeTab === 'dashboard' && <OverviewMetrics tenantId={userTenant.id} />}
           {activeTab === 'profile' && <RestaurantProfileForm tenant={userTenant} onSave={updateUserTenant} />}
-          {activeTab === 'categories' && <CategoriesManager categories={categories} onUpdateCategories={setCategories} />}
-          {activeTab === 'products' && <ProductsManager products={products} categories={categories} onUpdateProducts={setProducts} />}
+          {activeTab === 'categories' && <CategoriesManager categories={categories} onUpdateCategories={handleUpdateCategories} />}
+          {activeTab === 'products' && <ProductsManager products={products} categories={categories} onUpdateProducts={handleUpdateProducts} />}
           {activeTab === 'qrcode' && <QRCodeStudio tenantSlug={userTenant.slug} tenantName={userTenant.name} />}
           {activeTab === 'subscription' && <SubscriptionCard tenant={userTenant} />}
         </main>

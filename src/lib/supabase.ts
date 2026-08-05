@@ -66,13 +66,25 @@ export const DataService = {
   },
 
   async getCategoriesByTenant(tenantId: string): Promise<Category[]> {
+    // 1. Check local storage first for immediate persistence
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`konnexy_categories_${tenantId}`);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    // 2. Check Supabase
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
           .from('categories')
           .select('*')
           .eq('tenant_id', tenantId)
-          .eq('is_active', true)
           .order('sort_order', { ascending: true });
 
         if (data && !error && data.length > 0) return data as Category[];
@@ -100,7 +112,42 @@ export const DataService = {
     return [];
   },
 
+  async saveCategories(tenantId: string, categories: Category[]): Promise<boolean> {
+    // Save to LocalStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`konnexy_categories_${tenantId}`, JSON.stringify(categories));
+    }
+
+    // Save to Supabase
+    if (isSupabaseConfigured()) {
+      try {
+        const formatted = categories.map((c) => ({
+          ...c,
+          tenant_id: tenantId,
+        }));
+        await supabase.from('categories').upsert(formatted);
+      } catch (err) {
+        console.error('Failed to save categories to Supabase:', err);
+      }
+    }
+
+    return true;
+  },
+
   async getProductsByTenant(tenantId: string): Promise<Product[]> {
+    // 1. Check local storage first for immediate persistence
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`konnexy_products_${tenantId}`);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    // 2. Check Supabase
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase
@@ -145,6 +192,28 @@ export const DataService = {
     if (tenantId.includes('cafe') || tenantId === 't-4') return mapTemplateProducts('cafeteria');
 
     return [];
+  },
+
+  async saveProducts(tenantId: string, products: Product[]): Promise<boolean> {
+    // Save to LocalStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`konnexy_products_${tenantId}`, JSON.stringify(products));
+    }
+
+    // Save to Supabase
+    if (isSupabaseConfigured()) {
+      try {
+        const formatted = products.map((p) => ({
+          ...p,
+          tenant_id: tenantId,
+        }));
+        await supabase.from('products').upsert(formatted);
+      } catch (err) {
+        console.error('Failed to save products to Supabase:', err);
+      }
+    }
+
+    return true;
   },
 
   async recordAnalyticsEvent(tenantId: string, eventType: 'page_view' | 'qr_scan' | 'product_view' | 'whatsapp_click', productId?: string, tableNumber?: number) {
