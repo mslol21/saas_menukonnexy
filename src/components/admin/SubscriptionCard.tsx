@@ -14,10 +14,11 @@ interface SubscriptionCardProps {
 
 export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) => {
   const [isPixModalOpen, setIsPixModalOpen] = useState<boolean>(false);
-  const [copiedKey, setCopiedKey] = useState<boolean>(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [planType, setPlanType] = useState<'monthly' | 'annual'>(tenant.subscription_plan || 'monthly');
 
-  const pixKey = '+5516991551200';
+  const pixKeyPhone = '+5516991551200';
+  const pixKeyCpf = '65202520593';
   const whatsappNumber = '5516991551200';
 
   const monthlyPrice = 49.90;
@@ -25,10 +26,10 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
 
   const currentPrice = planType === 'annual' ? annualPrice : monthlyPrice;
 
-  const handleCopyPix = () => {
-    navigator.clipboard.writeText(pixKey);
-    setCopiedKey(true);
-    setTimeout(() => setCopiedKey(false), 3000);
+  const handleCopyPix = (keyText: string, keyType: string) => {
+    navigator.clipboard.writeText(keyText);
+    setCopiedKey(keyType);
+    setTimeout(() => setCopiedKey(null), 3000);
   };
 
   const handleSendProof = () => {
@@ -150,21 +151,41 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
             <Sparkles className="w-4 h-4" /> Pagamento rápido via Pix com liberação no WhatsApp +55 16 99155-1200
           </div>
 
-          {/* Pix Key Display */}
-          <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-3 max-w-md mx-auto">
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block">Chave Pix (Telefone)</span>
-            <div className="flex items-center justify-between gap-2 p-3 bg-zinc-900 rounded-xl border border-white/10 font-mono text-base font-bold text-orange-400">
-              <span>{pixKey}</span>
-              <button
-                type="button"
-                onClick={handleCopyPix}
-                className="p-2 rounded-lg bg-orange-500/20 hover:bg-orange-500 text-orange-400 hover:text-white transition-all text-xs font-bold flex items-center gap-1"
-              >
-                {copiedKey ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                <span>{copiedKey ? 'Copiado!' : 'Copiar Chave'}</span>
-              </button>
+          {/* Pix Keys Display */}
+          <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-4 max-w-md mx-auto">
+            {/* Phone Key */}
+            <div className="space-y-1 text-left">
+              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Chave Pix (Telefone)</span>
+              <div className="flex items-center justify-between gap-2 p-2.5 bg-zinc-900 rounded-xl border border-white/10 font-mono text-sm font-bold text-orange-400">
+                <span>{pixKeyPhone}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopyPix(pixKeyPhone, 'phone')}
+                  className="p-1.5 rounded-lg bg-orange-500/20 hover:bg-orange-500 text-orange-400 hover:text-white transition-all text-xs font-bold flex items-center gap-1"
+                >
+                  {copiedKey === 'phone' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedKey === 'phone' ? 'Copiado!' : 'Copiar'}</span>
+                </button>
+              </div>
             </div>
-            <span className="text-[11px] text-zinc-400 block">
+
+            {/* CPF Key */}
+            <div className="space-y-1 text-left">
+              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Chave Pix (CPF)</span>
+              <div className="flex items-center justify-between gap-2 p-2.5 bg-zinc-900 rounded-xl border border-white/10 font-mono text-sm font-bold text-orange-400">
+                <span>652.025.205-93</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopyPix(pixKeyCpf, 'cpf')}
+                  className="p-1.5 rounded-lg bg-orange-500/20 hover:bg-orange-500 text-orange-400 hover:text-white transition-all text-xs font-bold flex items-center gap-1"
+                >
+                  {copiedKey === 'cpf' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedKey === 'cpf' ? 'Copiado!' : 'Copiar'}</span>
+                </button>
+              </div>
+            </div>
+
+            <span className="text-[11px] text-zinc-400 block pt-1 border-t border-white/5">
               Valor exato a pagar: <strong className="text-white">R$ {currentPrice.toFixed(2).replace('.', ',')}</strong> ({planType === 'annual' ? 'Plano Anual R$ 499,90' : 'Plano Mensal R$ 49,90'})
             </span>
           </div>
@@ -173,8 +194,8 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
           <div className="text-left space-y-2 text-xs text-zinc-300 glass-panel p-5 rounded-2xl border border-white/10">
             <h4 className="font-bold text-white uppercase tracking-wider mb-2">Passo a Passo para Liberação:</h4>
             <ol className="space-y-2 list-decimal list-inside text-zinc-400">
-              <li>Abra o app do seu banco e selecione **Pix (Transferência por Telefone)**.</li>
-              <li>Insira a chave **{pixKey}** e informe o valor de **R$ {currentPrice.toFixed(2).replace('.', ',')}**.</li>
+              <li>Abra o app do seu banco e selecione a opção **Pix**.</li>
+              <li>Insira a chave Telefone (**{pixKeyPhone}**) ou CPF (**652.025.205-93**) e informe o valor de **R$ {currentPrice.toFixed(2).replace('.', ',')}**.</li>
               <li>Após o pagamento, clique no botão abaixo para **Enviar o Comprovante no WhatsApp**.</li>
             </ol>
           </div>
