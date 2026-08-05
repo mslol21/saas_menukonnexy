@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Tenant } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { Save, Store, Phone, MapPin, CheckCircle2, Palette, ShieldCheck, Flame, Upload, Image as ImageIcon } from 'lucide-react';
+import { Save, Store, Phone, MapPin, CheckCircle2, Palette, ShieldCheck, Flame, Upload, Image as ImageIcon, Search, Loader2 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface RestaurantProfileFormProps {
@@ -17,6 +17,70 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
 
+  // CEP Auto-complete state
+  const [cepInput, setCepInput] = useState(tenant.cep || '');
+  const [numberInput, setNumberInput] = useState(tenant.number || '');
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
+
+  const handleSearchCep = async (cepToSearch: string) => {
+    const cleanCep = cepToSearch.replace(/\D/g, '');
+    if (cleanCep.length !== 8) {
+      alert('Por favor, informe um CEP válido com 8 dígitos.');
+      return;
+    }
+
+    setIsFetchingCep(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        const street = data.logradouro || '';
+        const neighborhood = data.bairro || '';
+        const city = data.localidade || '';
+        const state = data.uf || '';
+        const formattedCep = cleanCep.replace(/(\d{5})(\d{3})/, '$1-$2');
+
+        const numStr = numberInput.trim() ? `, nº ${numberInput.trim()}` : '';
+        const fullAddr = `${street}${numStr} - ${neighborhood}, ${city} - ${state}, CEP: ${formattedCep}`;
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddr)}`;
+
+        setFormData((prev) => ({
+          ...prev,
+          cep: formattedCep,
+          street,
+          neighborhood,
+          city,
+          state,
+          address: fullAddr,
+          google_maps_url: mapsUrl,
+        }));
+      } else {
+        alert('CEP não encontrado. Por favor, verifique o número digitado.');
+      }
+    } catch (err) {
+      console.error('Erro ao consultar ViaCEP:', err);
+      alert('Falha ao consultar o CEP. Verifique sua conexão.');
+    } finally {
+      setIsFetchingCep(false);
+    }
+  };
+
+  const handleNumberChange = (num: string) => {
+    setNumberInput(num);
+    if (formData.street) {
+      const numStr = num.trim() ? `, nº ${num.trim()}` : '';
+      const fullAddr = `${formData.street}${numStr} - ${formData.neighborhood || ''}, ${formData.city || ''} - ${formData.state || ''}, CEP: ${formData.cep || ''}`;
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddr)}`;
+
+      setFormData((prev) => ({
+        ...prev,
+        number: num,
+        address: fullAddr,
+        google_maps_url: mapsUrl,
+      }));
+    }
+  };
+
   const handleFileUpload = async (file: File, target: 'logo' | 'banner') => {
     if (!file) return;
 
@@ -24,7 +88,6 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
     if (target === 'banner') setIsUploadingBanner(true);
 
     try {
-      // 1. If Supabase Storage configured, attempt storage upload
       if (isSupabaseConfigured()) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${tenant.id}-${target}-${Date.now()}.${fileExt}`;
@@ -44,7 +107,6 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
         }
       }
 
-      // 2. Fallback: Base64 Data URL reader for instant offline / local support
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
@@ -77,7 +139,7 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
         <div>
           <h2 className="text-xl font-bold text-white">Dados do Estabelecimento</h2>
-          <p className="text-xs text-zinc-400">Edite as informações operacionais, fotos e avisos exibidos no seu cardápio público.</p>
+          <p className="text-xs text-zinc-400">Edite as informações operacionais, endereço oficial por CEP e fotos exibidas no seu cardápio.</p>
         </div>
 
         <Button variant="primary" type="submit" leftIcon={<Save className="w-4 h-4" />}>
@@ -129,13 +191,10 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
             placeholder="Ex: 🔥 PEDIDO DIRETO SEM TAXAS • Peça direto pelo cardápio com envio instantâneo!"
             className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
           />
-          <span className="text-[11px] text-zinc-500 block mt-1">
-            Se deixado em branco, será exibido o banner padrão promocional de entregas diretas sem taxa.
-          </span>
         </div>
       </div>
 
-      {/* Main Info */}
+      {/* Main Info & Images */}
       <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-6">
         <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-white/10 pb-3">
           <Store className="w-4 h-4 text-amber-400" /> Identificação & Imagens da Marca
@@ -182,7 +241,6 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
               <ImageIcon className="w-4 h-4 text-amber-400" /> Logotipo do Estabelecimento
             </label>
 
-            {/* Thumbnail Preview */}
             <div className="flex items-center gap-4">
               <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-amber-500 bg-zinc-900 shrink-0 shadow-lg">
                 <img src={formData.logo_url} alt="Logo Preview" className="w-full h-full object-cover" />
@@ -217,7 +275,6 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
               <ImageIcon className="w-4 h-4 text-amber-400" /> Banner de Capa do Cardápio
             </label>
 
-            {/* Thumbnail Preview */}
             <div className="space-y-2">
               <div className="w-full h-20 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shadow-lg">
                 <img src={formData.banner_url} alt="Banner Preview" className="w-full h-full object-cover" />
@@ -248,6 +305,61 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
         </div>
       </div>
 
+      {/* Address via CEP Auto-Complete */}
+      <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-white/10 pb-3">
+          <MapPin className="w-4 h-4 text-rose-400" /> Localização & Endereço Automático por CEP
+        </h3>
+
+        {/* CEP Input & Search Button */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-bold text-amber-400 mb-1">CEP do Estabelecimento *</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={cepInput}
+                onChange={(e) => setCepInput(e.target.value)}
+                onBlur={() => cepInput && handleSearchCep(cepInput)}
+                placeholder="Ex: 14800-000 ou 55573-965"
+                className="flex-1 px-3.5 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
+              />
+              <button
+                type="button"
+                onClick={() => handleSearchCep(cepInput)}
+                disabled={isFetchingCep}
+                className="px-4 py-2.5 rounded-xl bg-amber-500 text-zinc-950 hover:bg-amber-400 font-extrabold text-xs flex items-center gap-1.5 transition-all shrink-0 active:scale-95 disabled:opacity-50"
+              >
+                {isFetchingCep ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                <span>{isFetchingCep ? 'Buscando...' : 'Buscar Endereço'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-zinc-300 mb-1">Número do Imóvel</label>
+            <input
+              type="text"
+              value={numberInput}
+              onChange={(e) => handleNumberChange(e.target.value)}
+              placeholder="Ex: 1500"
+              className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
+            />
+          </div>
+        </div>
+
+        {/* Address Generated Field */}
+        <div>
+          <label className="block text-xs font-semibold text-zinc-300 mb-1">Endereço Completo Gerado (Sem erros de digitação)</label>
+          <input
+            type="text"
+            value={formData.address}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-sm text-amber-400 font-medium border border-white/10 bg-zinc-900/50"
+          />
+        </div>
+      </div>
+
       {/* Contact & Social Links */}
       <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
         <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -275,23 +387,6 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
               className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
-        </div>
-      </div>
-
-      {/* Address */}
-      <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-rose-400" /> Localização & Endereço
-        </h3>
-
-        <div>
-          <label className="block text-xs font-semibold text-zinc-300 mb-1">Endereço Completo</label>
-          <input
-            type="text"
-            value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            className="w-full px-3.5 py-2.5 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
-          />
         </div>
       </div>
     </form>

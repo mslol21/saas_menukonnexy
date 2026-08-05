@@ -51,6 +51,12 @@ export interface Tenant {
   tiktok?: string;
   website?: string;
   address: string;
+  cep?: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
   google_maps_url?: string;
   opening_hours?: TenantOpeningHours;
   subscription_status: 'active' | 'suspended' | 'trial' | 'cancelled';
