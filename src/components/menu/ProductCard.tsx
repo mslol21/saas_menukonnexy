@@ -10,9 +10,15 @@ interface ProductCardProps {
   product: Product;
   onSelectProduct: (product: Product) => void;
   primaryColor?: string;
+  isLight?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProduct, primaryColor = '#B8860B' }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onSelectProduct,
+  primaryColor = '#B8860B',
+  isLight = false,
+}) => {
   const { items, addItem, updateQuantity } = useCart();
   const cartItem = items.find((i) => i.product.id === product.id);
   const quantityInCart = cartItem ? cartItem.quantity : 0;
@@ -37,7 +43,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
   return (
     <div
       onClick={() => onSelectProduct(product)}
-      className="glass-panel rounded-3xl p-4 border border-white/10 hover:border-amber-500/40 transition-all duration-300 cursor-pointer group flex flex-col sm:flex-row gap-4 relative overflow-hidden"
+      className={`rounded-3xl p-4 border transition-all duration-300 cursor-pointer group flex flex-col sm:flex-row gap-4 relative overflow-hidden ${
+        isLight
+          ? 'bg-white border-zinc-200 hover:border-emerald-500/50 shadow-md text-zinc-900'
+          : 'glass-panel border-white/10 hover:border-amber-500/40 text-white'
+      }`}
     >
       {/* Product Image & Badges */}
       <div className="relative w-full sm:w-40 h-44 sm:h-40 rounded-2xl overflow-hidden bg-zinc-900 shrink-0">
@@ -72,13 +82,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
         <div>
           {/* Title */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition-colors leading-tight">
+            <h3 className={`text-base font-bold transition-colors leading-tight ${isLight ? 'text-zinc-900 group-hover:text-emerald-600' : 'text-white group-hover:text-amber-400'}`}>
               {product.name}
             </h3>
           </div>
 
           {/* Description */}
-          <p className="text-xs text-zinc-400 mt-1.5 line-clamp-2 leading-relaxed">
+          <p className={`text-xs mt-1.5 line-clamp-2 leading-relaxed ${isLight ? 'text-zinc-600' : 'text-zinc-400'}`}>
             {product.description}
           </p>
 
@@ -101,7 +111,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
           )}
 
           {/* Additional details */}
-          <div className="flex items-center gap-3 mt-2 text-[11px] text-zinc-500">
+          <div className={`flex items-center gap-3 mt-2 text-[11px] ${isLight ? 'text-zinc-500' : 'text-zinc-500'}`}>
             {product.weight && <span>{product.weight}</span>}
             {product.prep_time_min && (
               <span className="flex items-center gap-1">
@@ -113,9 +123,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
         </div>
 
         {/* Price & Fast Quantity Counter Controls */}
-        <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/5">
+        <div className={`flex items-center justify-between pt-3 mt-3 border-t ${isLight ? 'border-zinc-200' : 'border-white/5'}`}>
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-extrabold text-white">
+            <span className={`text-lg font-extrabold ${isLight ? 'text-zinc-900' : 'text-white'}`}>
               R$ {product.promo_price ? product.promo_price.toFixed(2) : product.price.toFixed(2)}
             </span>
             {product.promo_price && (
@@ -127,7 +137,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
 
           {/* Quick Add or Instant Counter using primary color */}
           {quantityInCart > 0 ? (
-            <div className="flex items-center gap-2 p-1 rounded-xl bg-white/10 border border-white/20">
+            <div className={`flex items-center gap-2 p-1 rounded-xl border ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-white/10 border-white/20'}`}>
               <button
                 type="button"
                 onClick={handleDecrement}
@@ -135,7 +145,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelectProdu
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
-              <span className="text-sm font-black text-amber-400 min-w-[20px] text-center">
+              <span className={`text-sm font-black min-w-[20px] text-center ${isLight ? 'text-zinc-900' : 'text-amber-400'}`}>
                 {quantityInCart}
               </span>
               <button

@@ -97,40 +97,53 @@ export default function PublicMenuPage() {
     );
   };
 
+  const mode = tenant.theme_config?.mode || 'dark';
+  const isLight = mode === 'light';
+  const primaryColor = tenant.theme_config?.primary_color || '#B8860B';
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-white pb-32 font-sans selection:bg-orange-500 selection:text-white">
+    <div
+      className={`min-h-screen pb-32 font-sans transition-colors duration-300 ${
+        isLight
+          ? 'bg-zinc-100 text-zinc-900 selection:bg-emerald-500 selection:text-white light'
+          : 'bg-zinc-950 text-white selection:bg-orange-500 selection:text-white'
+      }`}
+    >
       {/* Table Badge Header Notification if mesa query present */}
       {mesaQuery && (
-        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold text-center py-2 px-4 shadow-md flex items-center justify-center gap-2">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold text-center py-2 px-4 shadow-md flex items-center justify-center gap-2">
           <QrCode className="w-4 h-4" />
           <span>Você está no Consumo Local - Mesa #{mesaQuery}</span>
         </div>
       )}
 
       {/* Header section */}
-      <MenuHeader tenant={tenant} />
+      <MenuHeader tenant={tenant} isLight={isLight} primaryColor={primaryColor} />
 
       {/* Search Bar */}
-      <SearchBar value={searchQuery} onChange={setSearchQuery} />
+      <SearchBar value={searchQuery} onChange={setSearchQuery} isLight={isLight} />
 
       {/* Filter Badges */}
-      <FilterBadges selectedFilters={selectedFilters} onToggleFilter={toggleFilterTag} />
+      <FilterBadges selectedFilters={selectedFilters} onToggleFilter={toggleFilterTag} isLight={isLight} />
 
       {/* Category Sticky Bar */}
       <CategoryTabs
         categories={categories}
         activeCategoryId={activeCategoryId}
         onSelectCategory={setActiveCategoryId}
-        primaryColor={tenant.theme_config?.primary_color}
+        primaryColor={primaryColor}
+        isLight={isLight}
       />
 
       {/* Products Grid */}
       <main className="max-w-4xl mx-auto px-4 space-y-4">
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-16 glass-panel rounded-3xl border border-white/10 p-8">
-            <AlertCircle className="w-12 h-12 text-zinc-500 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-white">Nenhum prato encontrado</h3>
-            <p className="text-xs text-zinc-400 mt-1">
+          <div className={`text-center py-16 rounded-3xl border p-8 ${
+            isLight ? 'bg-white border-zinc-200 text-zinc-900 shadow-sm' : 'glass-panel border-white/10 text-white'
+          }`}>
+            <AlertCircle className="w-12 h-12 text-zinc-400 mx-auto mb-3" />
+            <h3 className={`text-lg font-bold ${isLight ? 'text-zinc-900' : 'text-white'}`}>Nenhum prato encontrado</h3>
+            <p className={`text-xs mt-1 ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
               Tente alterar os termos da busca ou remover os filtros aplicados.
             </p>
           </div>
@@ -140,7 +153,8 @@ export default function PublicMenuPage() {
               key={prod.id}
               product={prod}
               onSelectProduct={setSelectedProduct}
-              primaryColor={tenant.theme_config?.primary_color}
+              primaryColor={primaryColor}
+              isLight={isLight}
             />
           ))
         )}
