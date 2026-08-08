@@ -21,8 +21,8 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
   const pixKeyCpf = '39613411844';
   const whatsappNumber = '5516991551200';
 
-  const monthlyPrice = 49.90;
-  const annualPrice = 499.90;
+  const monthlyPrice = 59.90;
+  const annualPrice = 599.90;
 
   const currentPrice = planType === 'annual' ? annualPrice : monthlyPrice;
 
@@ -46,7 +46,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
     const message = `Olá! Realizei o pagamento da assinatura do *Konnexy Menu* via Pix.\n\n` +
       `📌 *Restaurante:* ${tenant.name}\n` +
       `🔗 *Link:* menu.konnexy.com.br/menu/${tenant.slug}\n` +
-      `💳 *Plano Escolhido:* ${planType === 'annual' ? 'Anual (R$ 499,90/ano)' : 'Mensal (R$ 49,90/mês)'}\n` +
+      `💳 *Plano Escolhido:* ${planType === 'annual' ? 'Anual (R$ 599,90/ano)' : 'Mensal (R$ 59,90/mês)'}\n` +
       `💰 *Valor Pago:* R$ ${currentPrice.toFixed(2).replace('.', ',')}\n\n` +
       `Seguem os dados para confirmação da conta.`;
 
@@ -68,7 +68,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Plano Atual</span>
-            <h3 className="text-2xl font-black text-white">Konnexy Pro ({planType === 'annual' ? 'Anual 499,90' : 'Mensal 49,90'})</h3>
+            <h3 className="text-2xl font-black text-white">Konnexy Pro ({planType === 'annual' ? 'Anual 599,90' : 'Mensal 59,90'})</h3>
           </div>
 
           <Badge variant="success" className="px-4 py-1.5 text-xs font-bold uppercase">
@@ -85,7 +85,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
               planType === 'monthly' ? 'bg-orange-500 text-white shadow-md' : 'text-zinc-400 hover:text-white'
             }`}
           >
-            Mensal (R$ 49,90)
+            Mensal (R$ 59,90)
           </button>
           <button
             type="button"
@@ -94,7 +94,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
               planType === 'annual' ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md' : 'text-zinc-400 hover:text-white'
             }`}
           >
-            Anual (R$ 499,90)
+            Anual (R$ 599,90)
           </button>
         </div>
 
@@ -186,7 +186,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
             </div>
 
             <span className="text-[11px] text-zinc-400 block pt-1 border-t border-white/5">
-              Valor exato a pagar: <strong className="text-white">R$ {currentPrice.toFixed(2).replace('.', ',')}</strong> ({planType === 'annual' ? 'Plano Anual R$ 499,90' : 'Plano Mensal R$ 49,90'})
+              Valor exato a pagar: <strong className="text-white">R$ {currentPrice.toFixed(2).replace('.', ',')}</strong> ({planType === 'annual' ? 'Plano Anual R$ 599,90' : 'Plano Mensal R$ 59,90'})
             </span>
           </div>
 

@@ -32,7 +32,7 @@ export const Pricing: React.FC = () => {
                 !isAnnual ? 'bg-orange-500 text-white shadow-md' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Mensal (R$ 49,90)
+              Mensal (R$ 59,90)
             </button>
             <button
               onClick={() => setIsAnnual(true)}
@@ -40,7 +40,7 @@ export const Pricing: React.FC = () => {
                 isAnnual ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <span>Anual (R$ 499,90)</span>
+              <span>Anual (R$ 599,90)</span>
               <span className="text-[10px] bg-white text-orange-600 font-extrabold px-2 py-0.5 rounded-full uppercase">
                 Economia Especial
               </span>
@@ -70,7 +70,7 @@ export const Pricing: React.FC = () => {
             {/* Price Display */}
             <div className="flex items-baseline gap-2 mb-8">
               <span className="text-5xl font-extrabold text-white">
-                R$ {isAnnual ? '499,90' : '49,90'}
+                R$ {isAnnual ? '599,90' : '59,90'}
               </span>
               <span className="text-zinc-400 font-medium">{isAnnual ? '/ano' : '/mês'}</span>
               {isAnnual && (
