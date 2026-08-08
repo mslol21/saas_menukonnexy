@@ -350,15 +350,66 @@ export const MasterDashboard: React.FC = () => {
             Esta função é exclusiva do **Super Admin Master**. Selecione a paleta de cores primária, modo de exibição e estilo visual para a página pública deste usuário.
           </p>
 
+          {/* Paletas de Cores e Gradientes Pré-definidas */}
+          <div>
+            <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-400" /> Paletas & Temas de Gradiente Prontos
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {[
+                { id: 'emerald', name: '🌿 Esmeralda Luxury', primary: '#10b981', secondary: '#059669', bgStart: '#03180e', bgEnd: '#0b2d1c', mode: 'gradient', style: 'glass' },
+                { id: 'coffee', name: '☕ Café & Avelã Moka', primary: '#d97706', secondary: '#92400e', bgStart: '#170c08', bgEnd: '#2d170e', mode: 'gradient', style: 'glass' },
+                { id: 'cyber', name: '🪐 Cyber Neon Roxo', primary: '#a855f7', secondary: '#ec4899', bgStart: '#0b0518', bgEnd: '#1e0a38', mode: 'gradient', style: 'vibrant' },
+                { id: 'sunset', name: '🍔 Sunset Grill Fogo', primary: '#f97316', secondary: '#ef4444', bgStart: '#190704', bgEnd: '#330f08', mode: 'gradient', style: 'vibrant' },
+                { id: 'sapphire', name: '💎 Royal Sapphire Ocean', primary: '#06b6d4', secondary: '#3b82f6', bgStart: '#040f1a', bgEnd: '#0a2238', mode: 'gradient', style: 'glass' },
+                { id: 'cream', name: '🍦 Creme & Vanilla Soft', primary: '#059669', secondary: '#d97706', bgStart: '#f7f4ef', bgEnd: '#eae2d6', mode: 'light', style: 'luxury' },
+              ].map((pal) => (
+                <button
+                  key={pal.id}
+                  type="button"
+                  onClick={() =>
+                    setThemeConfig({
+                      primary_color: pal.primary,
+                      secondary_color: pal.secondary,
+                      mode: pal.mode as any,
+                      style: pal.style as any,
+                      gradient_preset: pal.id as any,
+                      bg_gradient_start: pal.bgStart,
+                      bg_gradient_end: pal.bgEnd,
+                    })
+                  }
+                  className={`p-3 rounded-2xl border text-left space-y-1.5 transition-all relative overflow-hidden group ${
+                    themeConfig.gradient_preset === pal.id
+                      ? 'border-amber-400 bg-white/10 ring-2 ring-amber-500/40 shadow-xl'
+                      : 'glass-panel border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">{pal.name}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: pal.primary }} />
+                      <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: pal.secondary }} />
+                    </div>
+                  </div>
+                  {/* Mini Gradient Preview Bar */}
+                  <div
+                    className="h-2 rounded-full w-full border border-white/10"
+                    style={{ background: `linear-gradient(to right, ${pal.bgStart}, ${pal.bgEnd})` }}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Primary Color Picker */}
           <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Cor de Destaque Primária</label>
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Cor de Destaque Primária Personalizada</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {colorOptions.map((c) => (
                 <button
                   key={c.hex}
                   type="button"
-                  onClick={() => setThemeConfig({ ...themeConfig, primary_color: c.hex })}
+                  onClick={() => setThemeConfig({ ...themeConfig, primary_color: c.hex, gradient_preset: 'custom' })}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all ${
                     themeConfig.primary_color === c.hex ? 'bg-white/10 border-amber-400 shadow-lg scale-105' : 'glass-panel border-white/10 text-zinc-400'
                   }`}
@@ -372,32 +423,41 @@ export const MasterDashboard: React.FC = () => {
 
           {/* Theme Mode Toggle */}
           <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Modo de Exibição Padrão</label>
-            <div className="grid grid-cols-2 gap-3">
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Modo / Estilo do Fundo</label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setThemeConfig({ ...themeConfig, mode: 'gradient' })}
+                className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 ${
+                  themeConfig.mode === 'gradient' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" /> Gradiente Temático
+              </button>
               <button
                 type="button"
                 onClick={() => setThemeConfig({ ...themeConfig, mode: 'dark' })}
-                className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 ${
+                className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 ${
                   themeConfig.mode === 'dark' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
                 }`}
               >
-                <Moon className="w-4 h-4" /> Dark Mode (Escuro Premium)
+                <Moon className="w-4 h-4" /> Dark Mode (Escuro)
               </button>
               <button
                 type="button"
                 onClick={() => setThemeConfig({ ...themeConfig, mode: 'light' })}
-                className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 ${
+                className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 ${
                   themeConfig.mode === 'light' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
                 }`}
               >
-                <Sun className="w-4 h-4" /> Light Mode (Claro Minimalista)
+                <Sun className="w-4 h-4" /> Light Mode (Creme)
               </button>
             </div>
           </div>
 
           {/* Visual Style Selection */}
           <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Estilo Visual da Interface</label>
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Estilo Visual dos Cards</label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"

@@ -23,8 +23,12 @@ export interface TenantOpeningHours {
 
 export interface TenantThemeConfig {
   primary_color: string;
-  mode: 'dark' | 'light';
-  style: 'glass' | 'minimal' | 'vibrant';
+  secondary_color?: string;
+  mode: 'dark' | 'light' | 'gradient';
+  style: 'glass' | 'minimal' | 'vibrant' | 'luxury';
+  gradient_preset?: 'emerald' | 'sunset' | 'coffee' | 'cyber' | 'sapphire' | 'cream' | 'custom';
+  bg_gradient_start?: string;
+  bg_gradient_end?: string;
 }
 
 export interface UserProfile {

@@ -97,25 +97,61 @@ export default function PublicMenuPage() {
     );
   };
 
-  const mode = tenant.theme_config?.mode || 'dark';
-  const isLight = mode === 'light';
-  const primaryColor = tenant.theme_config?.primary_color || '#B8860B';
+  const themeConfig = tenant.theme_config || { primary_color: '#B8860B', mode: 'dark', style: 'glass' };
+
+  // Map preset backgrounds
+  const PRESET_BG: Record<string, { primary: string; bgStart: string; bgEnd: string; isCream?: boolean }> = {
+    emerald: { primary: '#10b981', bgStart: '#03180e', bgEnd: '#0b2d1c' },
+    coffee: { primary: '#d97706', bgStart: '#170c08', bgEnd: '#2d170e' },
+    cyber: { primary: '#a855f7', bgStart: '#0b0518', bgEnd: '#1e0a38' },
+    sunset: { primary: '#f97316', bgStart: '#190704', bgEnd: '#330f08' },
+    sapphire: { primary: '#06b6d4', bgStart: '#040f1a', bgEnd: '#0a2238' },
+    cream: { primary: '#059669', bgStart: '#f7f4ef', bgEnd: '#eae2d6', isCream: true },
+  };
+
+  const preset = themeConfig.gradient_preset ? PRESET_BG[themeConfig.gradient_preset] : null;
+
+  const primaryColor = preset?.primary || themeConfig.primary_color || '#B8860B';
+  const mode = themeConfig.mode || 'dark';
+  const isLight = mode === 'light' || (preset?.isCream ?? false);
+
+  let bgStyle: React.CSSProperties = {};
+  if (preset) {
+    bgStyle = { background: `linear-gradient(135deg, ${preset.bgStart} 0%, ${preset.bgEnd} 100%)` };
+  } else if (themeConfig.bg_gradient_start && themeConfig.bg_gradient_end) {
+    bgStyle = { background: `linear-gradient(135deg, ${themeConfig.bg_gradient_start} 0%, ${themeConfig.bg_gradient_end} 100%)` };
+  }
 
   return (
     <div
-      className={`min-h-screen pb-32 font-sans transition-colors duration-300 ${
+      style={bgStyle}
+      className={`min-h-screen pb-32 font-sans transition-all duration-500 relative overflow-hidden ${
         isLight
           ? 'bg-zinc-100 text-zinc-900 selection:bg-emerald-500 selection:text-white light'
           : 'bg-zinc-950 text-white selection:bg-orange-500 selection:text-white'
       }`}
     >
-      {/* Table Badge Header Notification if mesa query present */}
-      {mesaQuery && (
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold text-center py-2 px-4 shadow-md flex items-center justify-center gap-2">
-          <QrCode className="w-4 h-4" />
-          <span>Você está no Consumo Local - Mesa #{mesaQuery}</span>
-        </div>
-      )}
+      {/* Ambient Glow Orbs */}
+      <div
+        className="fixed top-0 left-1/4 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none opacity-20 transition-all duration-700 z-0"
+        style={{ backgroundColor: primaryColor }}
+      />
+      <div
+        className="fixed bottom-0 right-1/4 w-[450px] h-[450px] rounded-full blur-[140px] pointer-events-none opacity-15 transition-all duration-700 z-0"
+        style={{ backgroundColor: primaryColor }}
+      />
+
+      <div className="relative z-10">
+        {/* Table Badge Header Notification if mesa query present */}
+        {mesaQuery && (
+          <div
+            style={{ backgroundColor: primaryColor }}
+            className="text-white text-xs font-bold text-center py-2 px-4 shadow-md flex items-center justify-center gap-2"
+          >
+            <QrCode className="w-4 h-4" />
+            <span>Você está no Consumo Local - Mesa #{mesaQuery}</span>
+          </div>
+        )}
 
       {/* Header section */}
       <MenuHeader tenant={tenant} isLight={isLight} primaryColor={primaryColor} />
@@ -182,6 +218,7 @@ export default function PublicMenuPage() {
         tenantSlug={tenant.slug}
         tenantName={tenant.name}
       />
+      </div>
     </div>
   );
 }
