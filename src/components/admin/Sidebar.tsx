@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Store, Layers, Package, QrCode, CreditCard, ExternalLink, LogOut } from 'lucide-react';
+import { LayoutDashboard, Store, Layers, Package, QrCode, CreditCard, ExternalLink, LogOut, ChefHat, Ticket } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -13,6 +13,8 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, tenantSlug }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard & Métricas', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: 'kitchen', label: 'Monitor da Cozinha (KDS)', icon: <ChefHat className="w-4 h-4" /> },
+    { id: 'coupons', label: 'Cupons & Entrega', icon: <Ticket className="w-4 h-4" /> },
     { id: 'profile', label: 'Dados do Restaurante', icon: <Store className="w-4 h-4" /> },
     { id: 'categories', label: 'Categorias', icon: <Layers className="w-4 h-4" /> },
     { id: 'products', label: 'Produtos & Pratos', icon: <Package className="w-4 h-4" /> },
@@ -21,7 +23,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, tenan
   ];
 
   return (
-    <aside className="w-full lg:w-64 glass-panel border-r border-white/10 p-6 flex flex-col justify-between shrink-0 min-h-[calc(100vh-80px)] rounded-3xl">
+    <aside className="w-full lg:w-64 glass-panel border-r border-white/10 p-6 flex flex-col justify-between shrink-0 min-h-[calc(100vh-80px)] rounded-3xl font-sans">
       <div>
         {/* Official Konnexy Brand */}
         <div className="flex items-center gap-3 pb-6 mb-6 border-b border-white/10">

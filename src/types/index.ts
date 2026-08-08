@@ -111,6 +111,40 @@ export interface CartItem {
   notes?: string;
 }
 
+export interface Coupon {
+  id: string;
+  tenant_id: string;
+  code: string;
+  discount_type: 'percent' | 'fixed';
+  discount_value: number;
+  min_order_amount?: number;
+  is_active: boolean;
+  created_at?: string;
+}
+
+export interface DeliveryZone {
+  id: string;
+  tenant_id: string;
+  name: string;
+  fee: number;
+  estimated_time?: string;
+  is_active: boolean;
+}
+
+export interface KitchenOrder {
+  id: string;
+  tenant_id: string;
+  customer_name: string;
+  order_type: 'table' | 'delivery' | 'takeaway';
+  table_number?: string;
+  payment_method: 'pix' | 'card' | 'cash';
+  items: CartItem[];
+  total_amount: number;
+  status: 'pending' | 'preparing' | 'ready' | 'completed';
+  notes?: string;
+  created_at: string;
+}
+
 export interface QRCodeData {
   id: string;
   tenant_id: string;
