@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { KitchenOrder } from '@/types';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { ChefHat, Clock, CheckCircle2, QrCode, MapPin, Store, AlertCircle, RefreshCw, Volume2, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
