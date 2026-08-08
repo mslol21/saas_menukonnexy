@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, CartItem, OrderDetails } from '@/types';
+import { Product, CartItem, OrderDetails, DeliveryAddressDetails } from '@/types';
 
 interface CartContextType {
   items: CartItem[];
@@ -21,9 +21,14 @@ interface CartContextType {
   setNotes: (val: string) => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  deliveryFee: number;
+  setDeliveryFee: (val: number) => void;
+  deliveryAddress: DeliveryAddressDetails | null;
+  setDeliveryAddress: (val: DeliveryAddressDetails | null) => void;
   totalAmount: number;
+  subtotalAmount: number;
   totalCount: number;
-  generateWhatsAppLink: (phone: string, tenantName: string) => string;
+  generateWhatsAppLink: (phone: string, tenantName: string, discountAmount?: number) => string;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -36,6 +41,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'cash'>('pix');
   const [notes, setNotes] = useState<string>('');
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const [deliveryFee, setDeliveryFee] = useState<number>(0);
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddressDetails | null>(null);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -86,16 +93,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => {
     setItems([]);
     setNotes('');
+    setDeliveryFee(0);
+    setDeliveryAddress(null);
   };
 
-  const totalAmount = items.reduce((acc, item) => {
+  const subtotalAmount = items.reduce((acc, item) => {
     const price = item.product.promo_price || item.product.price;
     return acc + price * item.quantity;
   }, 0);
 
+  const currentDeliveryFee = orderType === 'delivery' ? deliveryFee : 0;
+  const totalAmount = subtotalAmount + currentDeliveryFee;
+
   const totalCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
-  const generateWhatsAppLink = (phone: string, tenantName: string) => {
+  const generateWhatsAppLink = (phone: string, tenantName: string, discountAmount: number = 0) => {
     const cleanPhone = phone.replace(/\D/g, '');
     
     let text = `🛒 *NOVO PEDIDO - ${tenantName.toUpperCase()}*\n`;
@@ -105,6 +117,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       text += `\n📍 *Tipo:* Consumo no Local ${tableNumber ? `(Mesa ${tableNumber})` : ''}`;
     } else if (orderType === 'delivery') {
       text += `\n🛵 *Tipo:* Delivery para Entrega`;
+      if (deliveryAddress) {
+        text += `\n📮 *CEP:* ${deliveryAddress.cep}${deliveryAddress.distance_km ? ` (Distância: ${deliveryAddress.distance_km.toFixed(1)} km)` : ''}`;
+        text += `\n🏠 *Endereço:* ${deliveryAddress.street}, nº ${deliveryAddress.number}${deliveryAddress.complement ? ` (${deliveryAddress.complement})` : ''} - ${deliveryAddress.neighborhood}, ${deliveryAddress.city}/${deliveryAddress.state}`;
+      }
     } else {
       text += `\n🛍️ *Tipo:* Retirada no Balcão`;
     }
@@ -112,7 +128,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     text += `\n💳 *Pagamento:* ${paymentMethod.toUpperCase()}`;
     text += `\n\n------------------------------\n*ITENS DO PEDIDO:*\n`;
 
-    items.forEach((item, index) => {
+    items.forEach((item) => {
       const unitPrice = item.product.promo_price || item.product.price;
       const itemTotal = unitPrice * item.quantity;
       text += `\n*${item.quantity}x ${item.product.name}* - R$ ${itemTotal.toFixed(2)}`;
@@ -122,7 +138,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     text += `\n\n------------------------------`;
-    text += `\n💰 *VALOR TOTAL: R$ ${totalAmount.toFixed(2)}*`;
+    text += `\n💵 Subtotal: R$ ${subtotalAmount.toFixed(2)}`;
+    if (discountAmount > 0) {
+      text += `\n🏷️ Desconto Cupom: -R$ ${discountAmount.toFixed(2)}`;
+    }
+    if (orderType === 'delivery' && currentDeliveryFee > 0) {
+      text += `\n🛵 Taxa de Entrega: R$ ${currentDeliveryFee.toFixed(2)}`;
+    }
+    const finalCalculated = Math.max(0, subtotalAmount - discountAmount + currentDeliveryFee);
+    text += `\n💰 *VALOR TOTAL: R$ ${finalCalculated.toFixed(2)}*`;
 
     if (notes) {
       text += `\n\n📝 *Observações Gerais:*\n${notes}`;
@@ -153,6 +177,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setNotes,
         isCartOpen,
         setIsCartOpen,
+        deliveryFee,
+        setDeliveryFee,
+        deliveryAddress,
+        setDeliveryAddress,
+        subtotalAmount,
         totalAmount,
         totalCount,
         generateWhatsAppLink,

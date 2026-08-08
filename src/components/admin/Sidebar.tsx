@@ -18,7 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, tenan
     { id: 'profile', label: 'Dados do Restaurante', icon: <Store className="w-4 h-4" /> },
     { id: 'categories', label: 'Categorias', icon: <Layers className="w-4 h-4" /> },
     { id: 'products', label: 'Produtos & Pratos', icon: <Package className="w-4 h-4" /> },
-    { id: 'qrcode', label: 'Studio QR Code', icon: <QrCode className="w-4 h-4" /> },
+    { id: 'qrcode', label: 'Gestão de Mesas & QR Code', icon: <QrCode className="w-4 h-4" /> },
     { id: 'subscription', label: 'Minha Assinatura', icon: <CreditCard className="w-4 h-4" /> },
   ];
 

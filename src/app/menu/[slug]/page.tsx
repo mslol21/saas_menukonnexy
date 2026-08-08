@@ -154,7 +154,12 @@ export default function PublicMenuPage() {
       />
 
       {/* WhatsApp Cart Drawer */}
-      <WhatsAppCartDrawer tenantWhatsapp={tenant.whatsapp} tenantName={tenant.name} />
+      <WhatsAppCartDrawer
+        tenantWhatsapp={tenant.whatsapp}
+        tenantName={tenant.name}
+        tenantId={tenant.id}
+        storeCep={tenant.cep || '14800-000'}
+      />
 
       {/* QR Code Modal */}
       <QRCodeModal

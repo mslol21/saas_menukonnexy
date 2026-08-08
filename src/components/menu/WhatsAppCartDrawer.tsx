@@ -1,20 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { ShoppingBag, Trash2, Plus, Minus, Send, MapPin, Store, CreditCard, DollarSign, QrCode, Tag, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, Send, MapPin, Store, CreditCard, DollarSign, QrCode, Tag, CheckCircle2, Search, Loader2, AlertTriangle } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { DistanceDeliveryConfig, DeliveryCalculationResult } from '@/types';
+import { calculateDeliveryFeeByCep, formatCep } from '@/lib/cep-distance';
 
 interface WhatsAppCartDrawerProps {
   tenantWhatsapp: string;
   tenantName: string;
+  tenantId?: string;
+  storeCep?: string;
 }
 
 export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
   tenantWhatsapp,
   tenantName,
+  tenantId = 'default',
+  storeCep = '14800-000',
 }) => {
   const {
     items,
@@ -31,34 +37,129 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
     setOrderType,
     paymentMethod,
     setPaymentMethod,
+    subtotalAmount,
     totalAmount,
     totalCount,
+    deliveryFee,
+    setDeliveryFee,
+    deliveryAddress,
+    setDeliveryAddress,
     generateWhatsAppLink,
   } = useCart();
 
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
 
+  // Delivery CEP calculation state
+  const [cepInput, setCepInput] = useState('');
+  const [numberInput, setNumberInput] = useState('');
+  const [complementInput, setComplementInput] = useState('');
+  const [isCalculatingFee, setIsCalculatingFee] = useState(false);
+  const [calcResult, setCalcResult] = useState<DeliveryCalculationResult | null>(null);
+
+  // Load delivery config from localStorage
+  const getDeliveryConfig = (): DistanceDeliveryConfig => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`konnexy_delivery_dist_config_${tenantId}`);
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
+    }
+    return {
+      enabled: true,
+      mode: 'distance',
+      store_cep: storeCep,
+      base_fee: 5.00,
+      base_distance_km: 3.0,
+      price_per_km: 2.00,
+      max_distance_km: 15.0,
+    };
+  };
+
+  const handleCalculateCepFee = async (cepToCalc: string) => {
+    const clean = cepToCalc.replace(/\D/g, '');
+    if (clean.length !== 8) return;
+
+    setIsCalculatingFee(true);
+    setCalcResult(null);
+
+    const config = getDeliveryConfig();
+    const result = await calculateDeliveryFeeByCep(config.store_cep || storeCep, clean, config);
+    setCalcResult(result);
+    setIsCalculatingFee(false);
+
+    if (result.success && result.fee !== undefined && result.address) {
+      setDeliveryFee(result.fee);
+      setDeliveryAddress({
+        cep: formatCep(clean),
+        street: result.address.street,
+        number: numberInput,
+        neighborhood: result.address.neighborhood,
+        city: result.address.city,
+        state: result.address.state,
+        complement: complementInput,
+        distance_km: result.distance_km,
+        fee: result.fee,
+      });
+    } else {
+      setDeliveryFee(0);
+      setDeliveryAddress(null);
+    }
+  };
+
+  const handleNumberChange = (num: string) => {
+    setNumberInput(num);
+    if (deliveryAddress) {
+      setDeliveryAddress({
+        ...deliveryAddress,
+        number: num,
+      });
+    }
+  };
+
+  const handleComplementChange = (comp: string) => {
+    setComplementInput(comp);
+    if (deliveryAddress) {
+      setDeliveryAddress({
+        ...deliveryAddress,
+        complement: comp,
+      });
+    }
+  };
+
   const handleApplyCoupon = () => {
     const clean = couponCode.trim().toUpperCase();
     if (!clean) return;
 
     if (clean === 'BEMVINDO10') {
-      const disc = totalAmount * 0.1;
+      const disc = subtotalAmount * 0.1;
       setAppliedCoupon({ code: 'BEMVINDO10', discount: disc });
     } else if (clean === 'FRETEGRATIS') {
-      setAppliedCoupon({ code: 'FRETEGRATIS', discount: 5.00 });
+      setAppliedCoupon({ code: 'FRETEGRATIS', discount: deliveryFee > 0 ? deliveryFee : 5.00 });
     } else {
       alert('Cupom inválido ou expirado.');
     }
   };
 
-  const finalTotal = Math.max(0, totalAmount - (appliedCoupon ? appliedCoupon.discount : 0));
+  const discountAmount = appliedCoupon ? appliedCoupon.discount : 0;
+  const currentDeliveryFee = orderType === 'delivery' ? deliveryFee : 0;
+  const finalTotal = Math.max(0, subtotalAmount - discountAmount + currentDeliveryFee);
 
   const handleSendOrder = () => {
     if (!customerName.trim()) {
       alert('Por favor, informe seu nome antes de enviar o pedido.');
       return;
+    }
+
+    if (orderType === 'delivery') {
+      if (!deliveryAddress || !calcResult?.success) {
+        alert('Por favor, informe um CEP de entrega válido e confirme a taxa de frete.');
+        return;
+      }
+      if (!numberInput.trim()) {
+        alert('Por favor, informe o número do imóvel para a entrega.');
+        return;
+      }
     }
 
     try {
@@ -71,7 +172,7 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
       console.error(e);
     }
 
-    const waUrl = generateWhatsAppLink(tenantWhatsapp, tenantName);
+    const waUrl = generateWhatsAppLink(tenantWhatsapp, tenantName, discountAmount);
     window.open(waUrl, '_blank');
   };
 
@@ -142,30 +243,105 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
               </div>
             </div>
 
-            {/* Customer Name & Table Number */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1">Seu Nome *</label>
-                <input
-                  type="text"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Ex: João Silva"
-                  className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
-                  required
-                />
+            {/* Customer Name & Table Number / Delivery CEP Address */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-300 mb-1">Seu Nome *</label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Ex: João Silva"
+                    className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
+                    required
+                  />
+                </div>
+
+                {orderType === 'table' && (
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-300 mb-1">Número da Mesa</label>
+                    <input
+                      type="number"
+                      value={tableNumber}
+                      onChange={(e) => setTableNumber(e.target.value)}
+                      placeholder="Ex: 04"
+                      className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
+                    />
+                  </div>
+                )}
               </div>
 
-              {orderType === 'table' && (
-                <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1">Número da Mesa</label>
+              {/* Delivery Address & CEP Calculation */}
+              {orderType === 'delivery' && (
+                <div className="p-4 rounded-2xl glass-panel border border-emerald-500/30 bg-emerald-500/5 space-y-3">
+                  <label className="block text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5" /> Endereço de Entrega por CEP
+                  </label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div className="sm:col-span-2">
+                      <div className="flex gap-1.5">
+                        <input
+                          type="text"
+                          value={cepInput}
+                          onChange={(e) => setCepInput(e.target.value)}
+                          onBlur={() => cepInput && handleCalculateCepFee(cepInput)}
+                          placeholder="Informe seu CEP (ex: 14800-000)"
+                          className="flex-1 px-3 py-2 rounded-xl glass-panel text-xs text-white border border-white/10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleCalculateCepFee(cepInput)}
+                          disabled={isCalculatingFee}
+                          className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold flex items-center gap-1 shrink-0 transition-all disabled:opacity-50"
+                        >
+                          {isCalculatingFee ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+                          <span>{isCalculatingFee ? 'Buscando...' : 'Calcular Frete'}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        value={numberInput}
+                        onChange={(e) => handleNumberChange(e.target.value)}
+                        placeholder="Nº do Imóvel *"
+                        className="w-full px-3 py-2 rounded-xl glass-panel text-xs text-white border border-white/10"
+                        required
+                      />
+                    </div>
+                  </div>
+
                   <input
-                    type="number"
-                    value={tableNumber}
-                    onChange={(e) => setTableNumber(e.target.value)}
-                    placeholder="Ex: 04"
-                    className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white border border-white/10 focus:ring-2 focus:ring-amber-500/50"
+                    type="text"
+                    value={complementInput}
+                    onChange={(e) => handleComplementChange(e.target.value)}
+                    placeholder="Complemento (Ex: Apt 42, Bloco B - Opcional)"
+                    className="w-full px-3 py-1.5 rounded-xl glass-panel text-xs text-white border border-white/10"
                   />
+
+                  {/* Calculation Result Feedback */}
+                  {calcResult && (
+                    <div className={`p-3 rounded-xl border text-xs space-y-1 ${
+                      calcResult.success ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                    }`}>
+                      {calcResult.success ? (
+                        <>
+                          <p className="font-bold">📍 {calcResult.address?.street}, {calcResult.address?.neighborhood} - {calcResult.address?.city}/{calcResult.address?.state}</p>
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="text-[11px] text-zinc-400">📏 Distância: {calcResult.distance_km} km</span>
+                            <span className="font-extrabold text-emerald-400 text-sm">Frete: R$ {calcResult.fee?.toFixed(2)}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="font-bold flex items-center gap-1">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-400" /> {calcResult.error_message}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -272,9 +448,30 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
 
             {/* Summary & Submit */}
             <div className="pt-4 border-t border-white/10 space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-zinc-400">Total do Pedido:</span>
-                <span className="text-xl font-black text-emerald-400">R$ {finalTotal.toFixed(2)}</span>
+              <div className="space-y-1.5 text-xs text-zinc-300">
+                <div className="flex items-center justify-between">
+                  <span>Subtotal:</span>
+                  <span>R$ {subtotalAmount.toFixed(2)}</span>
+                </div>
+
+                {appliedCoupon && (
+                  <div className="flex items-center justify-between text-emerald-400">
+                    <span>Desconto ({appliedCoupon.code}):</span>
+                    <span>-R$ {discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+
+                {orderType === 'delivery' && (
+                  <div className="flex items-center justify-between text-amber-400">
+                    <span>Taxa de Entrega:</span>
+                    <span>{deliveryFee > 0 ? `+R$ ${deliveryFee.toFixed(2)}` : 'Digite o CEP'}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-sm pt-2 border-t border-white/10 font-bold">
+                  <span className="text-white">Total do Pedido:</span>
+                  <span className="text-xl font-black text-emerald-400">R$ {finalTotal.toFixed(2)}</span>
+                </div>
               </div>
 
               <Button

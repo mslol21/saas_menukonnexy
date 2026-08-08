@@ -131,6 +131,41 @@ export interface DeliveryZone {
   is_active: boolean;
 }
 
+export interface DistanceDeliveryConfig {
+  enabled: boolean;
+  mode: 'zone' | 'distance';
+  store_cep: string;
+  base_fee: number;
+  base_distance_km: number;
+  price_per_km: number;
+  max_distance_km: number;
+}
+
+export interface DeliveryAddressDetails {
+  cep: string;
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  complement?: string;
+  distance_km?: number;
+  fee?: number;
+}
+
+export interface DeliveryCalculationResult {
+  success: boolean;
+  error_message?: string;
+  distance_km?: number;
+  fee?: number;
+  address?: {
+    street: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+  };
+}
+
 export interface KitchenOrder {
   id: string;
   tenant_id: string;
@@ -171,4 +206,16 @@ export interface OrderDetails {
   items: CartItem[];
   total: number;
   notes?: string;
+}
+
+export interface RestaurantTable {
+  id: string;
+  tenant_id: string;
+  number: string;
+  name?: string;
+  capacity?: number;
+  status: 'available' | 'occupied' | 'closing' | 'reserved';
+  active_total?: number;
+  orders_count?: number;
+  last_activity?: string;
 }
