@@ -18,7 +18,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
   const [planType, setPlanType] = useState<'monthly' | 'annual'>(tenant.subscription_plan || 'monthly');
 
   const pixKeyPhone = '+5516991551200';
-  const pixKeyCpf = '65202520593';
+  const pixKeyCpf = '39613411844';
   const whatsappNumber = '5516991551200';
 
   const monthlyPrice = 49.90;
@@ -173,7 +173,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
             <div className="space-y-1 text-left">
               <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest block">Chave Pix (CPF)</span>
               <div className="flex items-center justify-between gap-2 p-2.5 bg-zinc-900 rounded-xl border border-white/10 font-mono text-sm font-bold text-orange-400">
-                <span>652.025.205-93</span>
+                <span>396.134.118-44</span>
                 <button
                   type="button"
                   onClick={() => handleCopyPix(pixKeyCpf, 'cpf')}
@@ -195,7 +195,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({ tenant }) =>
             <h4 className="font-bold text-white uppercase tracking-wider mb-2">Passo a Passo para Liberação:</h4>
             <ol className="space-y-2 list-decimal list-inside text-zinc-400">
               <li>Abra o app do seu banco e selecione a opção **Pix**.</li>
-              <li>Insira a chave Telefone (**{pixKeyPhone}**) ou CPF (**652.025.205-93**) e informe o valor de **R$ {currentPrice.toFixed(2).replace('.', ',')}**.</li>
+              <li>Insira a chave Telefone (**{pixKeyPhone}**) ou CPF (**396.134.118-44**) e informe o valor de **R$ {currentPrice.toFixed(2).replace('.', ',')}**.</li>
               <li>Após o pagamento, clique no botão abaixo para **Enviar o Comprovante no WhatsApp**.</li>
             </ol>
           </div>
