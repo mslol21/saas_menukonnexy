@@ -14,7 +14,7 @@ interface KitchenMonitorProps {
 export const KitchenMonitor: React.FC<KitchenMonitorProps> = ({ tenantId }) => {
   const [orders, setOrders] = useState<KitchenOrder[]>([]);
 
-  useEffect(() => {
+  const loadOrders = () => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`konnexy_orders_${tenantId}`);
       if (saved) {
@@ -69,6 +69,16 @@ export const KitchenMonitor: React.FC<KitchenMonitorProps> = ({ tenantId }) => {
         localStorage.setItem(`konnexy_orders_${tenantId}`, JSON.stringify(demoOrders));
       }
     }
+  };
+
+  useEffect(() => {
+    loadOrders();
+    const interval = setInterval(loadOrders, 2000);
+    window.addEventListener('storage', loadOrders);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', loadOrders);
+    };
   }, [tenantId]);
 
   const updateOrderStatus = (orderId: string, nextStatus: KitchenOrder['status']) => {

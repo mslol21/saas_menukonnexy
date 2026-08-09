@@ -56,7 +56,7 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   // Load tables from localStorage
-  useEffect(() => {
+  const loadTables = () => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`konnexy_tables_${tenantId}`);
       if (saved) {
@@ -78,6 +78,16 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
         localStorage.setItem(`konnexy_tables_${tenantId}`, JSON.stringify(demoTables));
       }
     }
+  };
+
+  useEffect(() => {
+    loadTables();
+    const interval = setInterval(loadTables, 2000);
+    window.addEventListener('storage', loadTables);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', loadTables);
+    };
   }, [tenantId]);
 
   const saveTablesToStorage = (updated: RestaurantTable[]) => {

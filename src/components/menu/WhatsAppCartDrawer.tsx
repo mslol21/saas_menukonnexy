@@ -6,7 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { ShoppingBag, Trash2, Plus, Minus, Send, MapPin, Store, CreditCard, DollarSign, QrCode, Tag, CheckCircle2, Search, Loader2, AlertTriangle } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { DistanceDeliveryConfig, DeliveryCalculationResult } from '@/types';
+import { DistanceDeliveryConfig, DeliveryCalculationResult, KitchenOrder } from '@/types';
 import { calculateDeliveryFeeByCep, formatCep } from '@/lib/cep-distance';
 
 interface WhatsAppCartDrawerProps {
@@ -184,6 +184,39 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
         }
       } catch (e) {
         console.error('Failed to auto update table status:', e);
+      }
+    }
+
+    // Save order into KDS (Kitchen Display System) orders list
+    if (tenantId) {
+      try {
+        const ordersKey = `konnexy_orders_${tenantId}`;
+        const existingOrders = localStorage.getItem(ordersKey);
+        let ordersList: KitchenOrder[] = [];
+        if (existingOrders) {
+          try {
+            ordersList = JSON.parse(existingOrders);
+          } catch (e) {}
+        }
+        const newOrder: KitchenOrder = {
+          id: `ord-${Date.now()}`,
+          tenant_id: tenantId,
+          customer_name: customerName,
+          order_type: orderType,
+          table_number: tableNumber || undefined,
+          payment_method: paymentMethod,
+          items: items.map((i) => ({ ...i })),
+          total_amount: finalTotal,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+        };
+        ordersList.unshift(newOrder);
+        localStorage.setItem(ordersKey, JSON.stringify(ordersList));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('storage'));
+        }
+      } catch (e) {
+        console.error('Failed to save order to KDS storage:', e);
       }
     }
 
