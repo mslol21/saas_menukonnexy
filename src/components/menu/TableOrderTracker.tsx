@@ -18,66 +18,53 @@ export const TableOrderTracker: React.FC<TableOrderTrackerProps> = ({
   const [activeOrders, setActiveOrders] = useState<KitchenOrder[]>([]);
 
   const loadTableOrders = async () => {
-    // 1. Local Storage check for instant initial render
-    if (typeof window !== 'undefined' && tenantId && tableNumber) {
-      try {
-        const saved =
-          localStorage.getItem(`konnexy_orders_${tenantId}`) ||
-          localStorage.getItem('konnexy_orders_t-1') ||
-          localStorage.getItem('konnexy_orders_default');
-        if (saved) {
-          const allOrders: KitchenOrder[] = JSON.parse(saved);
-          const cleanTbl = tableNumber.replace(/\D/g, '') || tableNumber;
-          const targetInt = parseInt(cleanTbl, 10);
+    if (typeof window === 'undefined' || !tenantId || !tableNumber) return;
 
-          const filtered = allOrders
-            .filter((o) => {
-              if (!o.table_number) return false;
-              const oTbl = o.table_number.replace(/\D/g, '') || o.table_number;
-              const oInt = parseInt(oTbl, 10);
-              return (
-                o.table_number === tableNumber ||
-                oTbl === cleanTbl ||
-                oTbl === cleanTbl.padStart(2, '0') ||
-                (targetInt && oInt === targetInt)
-              );
-            })
-            .filter((o) => o.status !== 'completed');
-          setActiveOrders(filtered);
-        }
-      } catch (e) {
-        console.error(e);
+    const cleanTbl = tableNumber.replace(/\D/g, '') || tableNumber;
+    const targetInt = parseInt(cleanTbl, 10);
+
+    const filterFn = (o: KitchenOrder) => {
+      if (!o || !o.table_number || o.status === 'completed') return false;
+      const oTbl = o.table_number.replace(/\D/g, '') || o.table_number;
+      const oInt = parseInt(oTbl, 10);
+      return (
+        o.table_number === tableNumber ||
+        oTbl === cleanTbl ||
+        oTbl === cleanTbl.padStart(2, '0') ||
+        (targetInt && oInt === targetInt)
+      );
+    };
+
+    let localMatches: KitchenOrder[] = [];
+    try {
+      const saved =
+        localStorage.getItem(`konnexy_orders_${tenantId}`) ||
+        localStorage.getItem('konnexy_orders_t-1') ||
+        localStorage.getItem('konnexy_orders_default');
+      if (saved) {
+        const allOrders: KitchenOrder[] = JSON.parse(saved);
+        localMatches = allOrders.filter(filterFn);
       }
-    }
+    } catch (e) {}
 
-    // 2. Fetch live status from Cloud API so mobile phones sync with Admin PC
+    let apiMatches: KitchenOrder[] = [];
     try {
       const res = await fetch(`/api/orders?tenantId=${tenantId}`);
       const data = await res.json();
       if (data.success && data.orders) {
-        const allOrders: KitchenOrder[] = data.orders;
-        const cleanTbl = tableNumber.replace(/\D/g, '') || tableNumber;
-        const targetInt = parseInt(cleanTbl, 10);
-
-        const filtered = allOrders
-          .filter((o) => {
-            if (!o.table_number) return false;
-            const oTbl = o.table_number.replace(/\D/g, '') || o.table_number;
-            const oInt = parseInt(oTbl, 10);
-            return (
-              o.table_number === tableNumber ||
-              oTbl === cleanTbl ||
-              oTbl === cleanTbl.padStart(2, '0') ||
-              (targetInt && oInt === targetInt)
-            );
-          })
-          .filter((o) => o.status !== 'completed');
-
-        setActiveOrders(filtered);
+        apiMatches = (data.orders as KitchenOrder[]).filter(filterFn);
       }
-    } catch (e) {
-      console.warn('API tracker fetch failed:', e);
-    }
+    } catch (e) {}
+
+    // Deduplicate and combine (API orders take precedence for status updates)
+    const combinedMap = new Map<string, KitchenOrder>();
+    localMatches.forEach((o) => combinedMap.set(o.id, o));
+    apiMatches.forEach((o) => combinedMap.set(o.id, o));
+
+    const merged = Array.from(combinedMap.values());
+
+    // Single atomic state update to prevent UI flickering/re-rendering unmounts
+    setActiveOrders(merged);
   };
 
   useEffect(() => {
