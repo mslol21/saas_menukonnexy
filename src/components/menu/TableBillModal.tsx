@@ -70,8 +70,17 @@ export const TableBillModal: React.FC<TableBillModalProps> = ({
         const saved = localStorage.getItem(storageKey);
         if (saved) {
           const tables = JSON.parse(saved);
+          const cleanNum = tableNumber.replace(/\D/g, '') || tableNumber;
+          const targetInt = parseInt(cleanNum, 10);
+
           const updated = tables.map((t: any) => {
-            if (t.number === tableNumber || t.number === tableNumber.padStart(2, '0')) {
+            const tInt = parseInt((t.number || '').replace(/\D/g, ''), 10);
+            if (
+              t.number === tableNumber ||
+              t.number === cleanNum ||
+              t.number === cleanNum.padStart(2, '0') ||
+              (targetInt && tInt === targetInt)
+            ) {
               return {
                 ...t,
                 status: 'closing',
@@ -81,6 +90,7 @@ export const TableBillModal: React.FC<TableBillModalProps> = ({
             return t;
           });
           localStorage.setItem(storageKey, JSON.stringify(updated));
+          window.dispatchEvent(new Event('storage'));
         }
       }
     } catch (e) {

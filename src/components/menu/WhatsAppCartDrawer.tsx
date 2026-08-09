@@ -163,24 +163,66 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
     }
 
     // Automatically update Table Status to 'Occupied' and accumulate consumption total
-    if (tableNumber && tenantId) {
+    const targetTableNum = tableNumber || (orderType === 'table' ? '01' : '');
+    if (targetTableNum && tenantId) {
       try {
         const storageKey = `konnexy_tables_${tenantId}`;
         const saved = localStorage.getItem(storageKey);
+        let tablesList: any[] = [];
         if (saved) {
-          const tablesList: any[] = JSON.parse(saved);
-          const updated = tablesList.map((t) => {
-            if (t.number === tableNumber || t.number === tableNumber.padStart(2, '0')) {
-              return {
-                ...t,
-                status: 'occupied',
-                active_total: (t.active_total || 0) + finalTotal,
-                orders_count: (t.orders_count || 0) + 1,
-              };
-            }
-            return t;
+          try { tablesList = JSON.parse(saved); } catch (e) {}
+        }
+
+        if (tablesList.length === 0) {
+          tablesList = [
+            { id: 't-1', tenant_id: tenantId, number: '01', name: 'Mesa 01 - Varanda', capacity: 2, status: 'available' },
+            { id: 't-2', tenant_id: tenantId, number: '02', name: 'Mesa 02 - Salão Principal', capacity: 4, status: 'available' },
+            { id: 't-3', tenant_id: tenantId, number: '03', name: 'Mesa 03 - Salão Principal', capacity: 4, status: 'available' },
+            { id: 't-4', tenant_id: tenantId, number: '04', name: 'Mesa 04 - Área Externa', capacity: 6, status: 'available' },
+            { id: 't-5', tenant_id: tenantId, number: '05', name: 'Mesa 05 - Salão VIP', capacity: 8, status: 'available' },
+          ];
+        }
+
+        const cleanNum = targetTableNum.replace(/\D/g, '') || targetTableNum;
+        const targetInt = parseInt(cleanNum, 10);
+
+        let tableFound = false;
+        const updated = tablesList.map((t) => {
+          const tInt = parseInt((t.number || '').replace(/\D/g, ''), 10);
+          if (
+            t.number === targetTableNum ||
+            t.number === cleanNum ||
+            t.number === cleanNum.padStart(2, '0') ||
+            (targetInt && tInt === targetInt)
+          ) {
+            tableFound = true;
+            return {
+              ...t,
+              status: 'occupied',
+              active_total: (t.active_total || 0) + finalTotal,
+              orders_count: (t.orders_count || 0) + 1,
+            };
+          }
+          return t;
+        });
+
+        if (!tableFound) {
+          const numFormatted = cleanNum.padStart(2, '0');
+          updated.push({
+            id: `tbl-${Date.now()}`,
+            tenant_id: tenantId,
+            number: numFormatted,
+            name: `Mesa ${numFormatted}`,
+            capacity: 4,
+            status: 'occupied',
+            active_total: finalTotal,
+            orders_count: 1,
           });
-          localStorage.setItem(storageKey, JSON.stringify(updated));
+        }
+
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('storage'));
         }
       } catch (e) {
         console.error('Failed to auto update table status:', e);
