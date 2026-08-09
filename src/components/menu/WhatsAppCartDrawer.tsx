@@ -232,6 +232,8 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
 
     const waUrl = generateWhatsAppLink(tenantWhatsapp, tenantName, discountAmount);
     window.open(waUrl, '_blank');
+    clearCart();
+    setIsCartOpen(false);
   };
 
   return (

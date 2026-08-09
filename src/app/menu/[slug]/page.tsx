@@ -13,6 +13,7 @@ import { ProductDetailModal } from '@/components/menu/ProductDetailModal';
 import { WhatsAppCartDrawer } from '@/components/menu/WhatsAppCartDrawer';
 import { QRCodeModal } from '@/components/menu/QRCodeModal';
 import { TableBillModal } from '@/components/menu/TableBillModal';
+import { TableOrderTracker } from '@/components/menu/TableOrderTracker';
 import { useCart } from '@/context/CartContext';
 import { QrCode, Sparkles, AlertCircle, Receipt } from 'lucide-react';
 
@@ -168,6 +169,11 @@ export default function PublicMenuPage() {
 
       {/* Header section */}
       <MenuHeader tenant={tenant} isLight={isLight} primaryColor={primaryColor} />
+
+      {/* Realtime Table Order Tracker Widget */}
+      {mesaQuery && (
+        <TableOrderTracker tenantId={tenant.id} tableNumber={mesaQuery} primaryColor={primaryColor} />
+      )}
 
       {/* Search Bar */}
       <SearchBar value={searchQuery} onChange={setSearchQuery} isLight={isLight} />
