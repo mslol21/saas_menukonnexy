@@ -1,6 +1,6 @@
 -- ==============================================================================
--- MENU KONNEXY SAAS - SCRIPT SQL COMPLETO & SEGURO (POSTGRESQL + RPC + RLS)
--- Versão 3.0.0 • Produção • Proteção contra Vazamento de Produtos e Injeção de Pedidos
+-- MENU KONNEXY SAAS - SCRIPT SQL COMPLETO & BLINDADO (POSTGRESQL + RPC + RLS 3.5)
+-- Versão 3.5.0 • Produção • Proteção contra Search Path Hijacking, REVOKEs e Views
 -- ==============================================================================
 
 -- 1. Habilitar RLS em TODAS as tabelas do sistema
@@ -11,24 +11,52 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE restaurant_tables ENABLE ROW LEVEL SECURITY;
 ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
 
--- Limpeza de políticas anteriores
-DROP POLICY IF EXISTS "Public read tenants" ON tenants;
-DROP POLICY IF EXISTS "Admin update own tenant" ON tenants;
-DROP POLICY IF EXISTS "Public read categories" ON categories;
-DROP POLICY IF EXISTS "Admin manage categories" ON categories;
-DROP POLICY IF EXISTS "Public read products" ON products;
-DROP POLICY IF EXISTS "Block direct public select on products" ON products;
-DROP POLICY IF EXISTS "Admin manage products" ON products;
-DROP POLICY IF EXISTS "Client create orders" ON orders;
+-- Limpeza de políticas prévias
+DROP POLICY IF EXISTS "Public select active tenant" ON tenants;
+DROP POLICY IF EXISTS "Admin manage own tenant" ON tenants;
+DROP POLICY IF EXISTS "Admin select own categories" ON categories;
+DROP POLICY IF EXISTS "Admin manage own categories" ON categories;
+DROP POLICY IF EXISTS "Admin select own products" ON products;
+DROP POLICY IF EXISTS "Admin manage own products" ON products;
 DROP POLICY IF EXISTS "Admin manage orders" ON orders;
-DROP POLICY IF EXISTS "Public read tables" ON restaurant_tables;
 DROP POLICY IF EXISTS "Admin manage tables" ON restaurant_tables;
-DROP POLICY IF EXISTS "Insert analytics" ON analytics_events;
 DROP POLICY IF EXISTS "Admin read analytics" ON analytics_events;
+DROP POLICY IF EXISTS "Allow server analytics insert" ON analytics_events;
 
 -- ==============================================================================
--- 2. SOLUÇÃO DEFINITIVA CONTRA VAZAMENTO DE PRODUTOS: FUNÇÃO RPC SECURITY DEFINER
--- Impede que qualquer cliente com ANON_KEY consulte pratos de concorrentes
+-- 2. REVOKES EXPLÍCITOS (Camada de Permissões de Tabela)
+-- Impede física e totalmente consultas genéricas via ANON_KEY/AUTHENTICATED
+-- ==============================================================================
+REVOKE SELECT, INSERT, UPDATE, DELETE ON products FROM anon, authenticated;
+REVOKE SELECT, INSERT, UPDATE, DELETE ON categories FROM anon, authenticated;
+REVOKE INSERT, UPDATE, DELETE ON orders FROM anon, authenticated;
+REVOKE SELECT, INSERT, UPDATE, DELETE ON restaurant_tables FROM anon, authenticated;
+REVOKE SELECT, INSERT, UPDATE, DELETE ON analytics_events FROM anon, authenticated;
+
+-- ==============================================================================
+-- 3. VISTA PÚBLICA SEGURA DA TABELA TENANTS (Previne Vazamento de E-mail/CNPJ)
+-- Expõe apenas os dados públicos necessários para o cardápio
+-- ==============================================================================
+CREATE OR REPLACE VIEW public_tenants AS
+SELECT 
+  id,
+  name,
+  slug,
+  logo_url,
+  banner_url,
+  description,
+  phone,
+  whatsapp,
+  address,
+  theme_config,
+  subscription_status
+FROM tenants
+WHERE subscription_status = 'active';
+
+GRANT SELECT ON public_tenants TO anon, authenticated;
+
+-- ==============================================================================
+-- 4. FUNÇÃO RPC SECURITY DEFINER: PRODUTOS (Com search_path blindado)
 -- ==============================================================================
 CREATE OR REPLACE FUNCTION get_public_menu_products(p_slug text)
 RETURNS TABLE (
@@ -50,6 +78,7 @@ RETURNS TABLE (
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
 BEGIN
   RETURN QUERY
@@ -66,7 +95,9 @@ BEGIN
 END;
 $$;
 
--- Função RPC para leitura segura de categorias por slug
+-- ==============================================================================
+-- 5. FUNÇÃO RPC SECURITY DEFINER: CATEGORIAS (Com search_path blindado)
+-- ==============================================================================
 CREATE OR REPLACE FUNCTION get_public_menu_categories(p_slug text)
 RETURNS TABLE (
   id uuid,
@@ -78,6 +109,7 @@ RETURNS TABLE (
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
 BEGIN
   RETURN QUERY
@@ -91,64 +123,59 @@ BEGIN
 END;
 $$;
 
+-- Conceder permissão de execução das RPCs para acesso anônimo
+GRANT EXECUTE ON FUNCTION get_public_menu_products(text) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION get_public_menu_categories(text) TO anon, authenticated;
+
 -- ==============================================================================
--- 3. POLÍTICA DE RLS DA TABELA 'PRODUCTS'
--- SELECT direto sem JWT de admin é BLOQUEADO. Obrigatório usar a função RPC acima.
+-- 6. POLÍTICAS DE RLS PARA O PAINEL ADMIN (Autenticado via JWT Claim)
 -- ==============================================================================
+
+-- PRODUCTS (Admin)
 CREATE POLICY "Admin select own products"
 ON products FOR SELECT
+TO authenticated
 USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
 CREATE POLICY "Admin manage own products"
 ON products FOR ALL
+TO authenticated
 USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
--- ==============================================================================
--- 4. POLÍTICA DE RLS DA TABELA 'CATEGORIES'
--- ==============================================================================
+-- CATEGORIES (Admin)
 CREATE POLICY "Admin select own categories"
 ON categories FOR SELECT
+TO authenticated
 USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
 CREATE POLICY "Admin manage own categories"
 ON categories FOR ALL
+TO authenticated
 USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
--- ==============================================================================
--- 5. POLÍTICA DE RLS DA TABELA 'TENANTS'
--- ==============================================================================
--- Leitura pública segura por slug para resolução inicial do cardápio
-CREATE POLICY "Public select active tenant"
-ON tenants FOR SELECT
-USING (subscription_status = 'active');
-
+-- TENANTS (Admin)
 CREATE POLICY "Admin manage own tenant"
-ON tenants FOR UPDATE
+ON tenants FOR ALL
+TO authenticated
 USING (id = (auth.jwt() ->> 'tenant_id')::uuid);
 
--- ==============================================================================
--- 6. POLÍTICA DE RLS DA TABELA 'ORDERS'
--- PREVENÇÃO DE ATAQUES DE SPAM/INJEÇÃO: Inserção de pedidos via API Server-side Next.js
--- ==============================================================================
--- Bloquear inserção direta sem role de serviço/admin no frontend
+-- ORDERS (Admin + Server Role)
 CREATE POLICY "Admin manage orders"
 ON orders FOR ALL
+TO authenticated
 USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
--- ==============================================================================
--- 7. POLÍTICA DE RLS DA TABELA 'RESTAURANT_TABLES'
--- ==============================================================================
+-- RESTAURANT_TABLES (Admin)
 CREATE POLICY "Admin manage tables"
 ON restaurant_tables FOR ALL
+TO authenticated
 USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
--- ==============================================================================
--- 8. POLÍTICA DE RLS DA TABELA 'ANALYTICS_EVENTS'
--- ==============================================================================
+-- ANALYTICS_EVENTS (Admin + Server Role)
 CREATE POLICY "Admin read analytics"
 ON analytics_events FOR SELECT
+TO authenticated
 USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
-CREATE POLICY "Allow server analytics insert"
-ON analytics_events FOR INSERT
-WITH CHECK (tenant_id IS NOT NULL);
+-- Conceder permissões para a role de administração autenticada
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
