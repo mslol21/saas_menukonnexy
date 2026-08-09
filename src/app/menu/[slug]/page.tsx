@@ -14,8 +14,9 @@ import { WhatsAppCartDrawer } from '@/components/menu/WhatsAppCartDrawer';
 import { QRCodeModal } from '@/components/menu/QRCodeModal';
 import { TableBillModal } from '@/components/menu/TableBillModal';
 import { TableOrderTracker } from '@/components/menu/TableOrderTracker';
+import { PrivacyPolicyModal } from '@/components/menu/PrivacyPolicyModal';
 import { useCart } from '@/context/CartContext';
-import { QrCode, Sparkles, AlertCircle, Receipt } from 'lucide-react';
+import { QrCode, Sparkles, AlertCircle, Receipt, ShieldCheck } from 'lucide-react';
 
 export default function PublicMenuPage() {
   const params = useParams();
@@ -36,6 +37,7 @@ export default function PublicMenuPage() {
 
   const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
   const [isBillModalOpen, setIsBillModalOpen] = useState<boolean>(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (mesaQuery) {
@@ -259,6 +261,23 @@ export default function PublicMenuPage() {
           tenantWhatsapp={tenant.whatsapp}
         />
       )}
+
+      {/* Privacy Policy Modal (LGPD — Art. 7º, V) */}
+      <PrivacyPolicyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+      />
+
+      {/* LGPD Footer Link */}
+      <div style={{ textAlign: 'center', padding: '1rem 0 2rem', opacity: 0.5 }}>
+        <button
+          onClick={() => setIsPrivacyModalOpen(true)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.7rem', color: 'inherit' }}
+        >
+          <ShieldCheck size={12} />
+          Política de Privacidade &amp; LGPD
+        </button>
+      </div>
       </div>
     </div>
   );
