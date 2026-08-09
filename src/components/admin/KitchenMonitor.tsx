@@ -14,70 +14,45 @@ interface KitchenMonitorProps {
 export const KitchenMonitor: React.FC<KitchenMonitorProps> = ({ tenantId }) => {
   const [orders, setOrders] = useState<KitchenOrder[]>([]);
 
-  const loadOrders = () => {
+  const loadOrders = async () => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`konnexy_orders_${tenantId}`);
+      const saved =
+        localStorage.getItem(`konnexy_orders_${tenantId}`) ||
+        localStorage.getItem('konnexy_orders_t-1') ||
+        localStorage.getItem('konnexy_orders_default');
       if (saved) {
         try { setOrders(JSON.parse(saved)); } catch (e) { console.error(e); }
-      } else {
-        // Demo Orders for Kitchen Display
-        const demoOrders: KitchenOrder[] = [
-          {
-            id: 'ord-101',
-            tenant_id: tenantId,
-            customer_name: 'Carlos Eduardo',
-            order_type: 'table',
-            table_number: '04',
-            payment_method: 'pix',
-            items: [
-              { product: { id: 'p1', name: 'Burger Angus Supremo', price: 38.90 } as any, quantity: 2, notes: 'Sem cebola' },
-              { product: { id: 'p2', name: 'Batata Trufada', price: 24.90 } as any, quantity: 1 },
-            ],
-            total_amount: 102.70,
-            status: 'pending',
-            created_at: new Date(Date.now() - 5 * 60000).toISOString(),
-          },
-          {
-            id: 'ord-102',
-            tenant_id: tenantId,
-            customer_name: 'Mariana Santos',
-            order_type: 'delivery',
-            payment_method: 'card',
-            items: [
-              { product: { id: 'p3', name: 'Pizza Margherita Especial', price: 54.90 } as any, quantity: 1 },
-              { product: { id: 'p4', name: 'Coca-Cola Zero (350ml)', price: 7.90 } as any, quantity: 2 },
-            ],
-            total_amount: 70.70,
-            status: 'preparing',
-            created_at: new Date(Date.now() - 15 * 60000).toISOString(),
-          },
-          {
-            id: 'ord-103',
-            tenant_id: tenantId,
-            customer_name: 'Roberto Lima',
-            order_type: 'takeaway',
-            payment_method: 'cash',
-            items: [
-              { product: { id: 'p5', name: 'Combinado Sushi Omakase (20p)', price: 79.90 } as any, quantity: 1 },
-            ],
-            total_amount: 79.90,
-            status: 'ready',
-            created_at: new Date(Date.now() - 25 * 60000).toISOString(),
-          },
-        ];
-        setOrders(demoOrders);
-        localStorage.setItem(`konnexy_orders_${tenantId}`, JSON.stringify(demoOrders));
       }
+    }
+
+    try {
+      const res = await fetch(`/api/orders?tenantId=${tenantId}`);
+      const data = await res.json();
+      if (data.success && data.orders && data.orders.length > 0) {
+        setOrders(data.orders);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(`konnexy_orders_${tenantId}`, JSON.stringify(data.orders));
+          localStorage.setItem('konnexy_orders_default', JSON.stringify(data.orders));
+        }
+      }
+    } catch (e) {
+      console.warn('Failed API orders fetch:', e);
     }
   };
 
   useEffect(() => {
     loadOrders();
-    const interval = setInterval(loadOrders, 2000);
+    const interval = setInterval(loadOrders, 1500);
     window.addEventListener('storage', loadOrders);
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel('konnexy_realtime_sync');
+      bc.onmessage = () => loadOrders();
+    } catch (e) {}
     return () => {
       clearInterval(interval);
       window.removeEventListener('storage', loadOrders);
+      if (bc) bc.close();
     };
   }, [tenantId]);
 
@@ -86,7 +61,15 @@ export const KitchenMonitor: React.FC<KitchenMonitorProps> = ({ tenantId }) => {
     setOrders(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem(`konnexy_orders_${tenantId}`, JSON.stringify(updated));
+      localStorage.setItem('konnexy_orders_default', JSON.stringify(updated));
+      window.dispatchEvent(new Event('storage'));
     }
+
+    fetch('/api/orders', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, tenantId, status: nextStatus }),
+    }).catch((e) => console.error(e));
 
     if (nextStatus === 'ready') {
       try {

@@ -55,8 +55,8 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
   // Notification feedback
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
-  // Load tables from localStorage
-  const loadTables = () => {
+  // Load tables from localStorage & Cloud API
+  const loadTables = async () => {
     if (typeof window !== 'undefined') {
       const saved =
         localStorage.getItem(`konnexy_tables_${tenantId}`) ||
@@ -69,19 +69,21 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
         } catch (e) {
           console.error(e);
         }
-      } else {
-        // Initial Demo Tables
-        const demoTables: RestaurantTable[] = [
-          { id: 't-1', tenant_id: tenantId, number: '01', name: 'Mesa 01 - Varanda', capacity: 2, status: 'available' },
-          { id: 't-2', tenant_id: tenantId, number: '02', name: 'Mesa 02 - Salão Principal', capacity: 4, status: 'available' },
-          { id: 't-3', tenant_id: tenantId, number: '03', name: 'Mesa 03 - Salão Principal', capacity: 4, status: 'available' },
-          { id: 't-4', tenant_id: tenantId, number: '04', name: 'Mesa 04 - Área Externa', capacity: 6, status: 'available' },
-          { id: 't-5', tenant_id: tenantId, number: '05', name: 'Mesa 05 - Salão VIP', capacity: 8, status: 'available' },
-        ];
-        setTables(demoTables);
-        localStorage.setItem(`konnexy_tables_${tenantId}`, JSON.stringify(demoTables));
-        localStorage.setItem('konnexy_tables_default', JSON.stringify(demoTables));
       }
+    }
+
+    try {
+      const res = await fetch(`/api/tables?tenantId=${tenantId}`);
+      const data = await res.json();
+      if (data.success && data.tables && data.tables.length > 0) {
+        setTables(data.tables);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(`konnexy_tables_${tenantId}`, JSON.stringify(data.tables));
+          localStorage.setItem('konnexy_tables_default', JSON.stringify(data.tables));
+        }
+      }
+    } catch (e) {
+      console.warn('API tables fetch failed:', e);
     }
   };
 

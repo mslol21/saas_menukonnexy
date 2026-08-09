@@ -270,6 +270,16 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
             bc.close();
           } catch (e) {}
         }
+
+        // Send order to cloud API endpoint so external devices (PC Admin) get the order instantly
+        fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order: newOrder,
+            tableUpdate: targetTableNum ? { tableNumber: targetTableNum, finalTotal } : undefined,
+          }),
+        }).catch((err) => console.warn('Cloud API sync failed:', err));
       } catch (e) {
         console.error('Failed to save order to KDS storage:', e);
       }
