@@ -162,6 +162,31 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
       }
     }
 
+    // Automatically update Table Status to 'Occupied' and accumulate consumption total
+    if (tableNumber && tenantId) {
+      try {
+        const storageKey = `konnexy_tables_${tenantId}`;
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const tablesList: any[] = JSON.parse(saved);
+          const updated = tablesList.map((t) => {
+            if (t.number === tableNumber || t.number === tableNumber.padStart(2, '0')) {
+              return {
+                ...t,
+                status: 'occupied',
+                active_total: (t.active_total || 0) + finalTotal,
+                orders_count: (t.orders_count || 0) + 1,
+              };
+            }
+            return t;
+          });
+          localStorage.setItem(storageKey, JSON.stringify(updated));
+        }
+      } catch (e) {
+        console.error('Failed to auto update table status:', e);
+      }
+    }
+
     try {
       confetti({
         particleCount: 80,
