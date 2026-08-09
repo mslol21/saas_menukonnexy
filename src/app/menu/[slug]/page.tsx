@@ -12,8 +12,9 @@ import { ProductCard } from '@/components/menu/ProductCard';
 import { ProductDetailModal } from '@/components/menu/ProductDetailModal';
 import { WhatsAppCartDrawer } from '@/components/menu/WhatsAppCartDrawer';
 import { QRCodeModal } from '@/components/menu/QRCodeModal';
+import { TableBillModal } from '@/components/menu/TableBillModal';
 import { useCart } from '@/context/CartContext';
-import { QrCode, Sparkles, AlertCircle } from 'lucide-react';
+import { QrCode, Sparkles, AlertCircle, Receipt } from 'lucide-react';
 
 export default function PublicMenuPage() {
   const params = useParams();
@@ -33,6 +34,7 @@ export default function PublicMenuPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
+  const [isBillModalOpen, setIsBillModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (mesaQuery) {
@@ -146,10 +148,21 @@ export default function PublicMenuPage() {
         {mesaQuery && (
           <div
             style={{ backgroundColor: primaryColor }}
-            className="text-white text-xs font-bold text-center py-2 px-4 shadow-md flex items-center justify-center gap-2"
+            className="text-white text-xs font-bold py-2.5 px-4 shadow-md flex items-center justify-between gap-2 max-w-4xl mx-auto rounded-b-2xl flex-wrap"
           >
-            <QrCode className="w-4 h-4" />
-            <span>Você está no Consumo Local - Mesa #{mesaQuery}</span>
+            <div className="flex items-center gap-2">
+              <QrCode className="w-4 h-4" />
+              <span>Você está no Consumo Local - <strong>Mesa #{mesaQuery}</strong></span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsBillModalOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-black text-xs flex items-center gap-1.5 shadow-lg active:scale-95 transition-all"
+            >
+              <Receipt className="w-3.5 h-3.5" />
+              <span>Pedir a Conta</span>
+            </button>
           </div>
         )}
 
@@ -218,6 +231,18 @@ export default function PublicMenuPage() {
         tenantSlug={tenant.slug}
         tenantName={tenant.name}
       />
+
+      {/* Table Bill Request Modal */}
+      {mesaQuery && (
+        <TableBillModal
+          isOpen={isBillModalOpen}
+          onClose={() => setIsBillModalOpen(false)}
+          tableNumber={mesaQuery}
+          tenantName={tenant.name}
+          tenantId={tenant.id}
+          tenantWhatsapp={tenant.whatsapp}
+        />
+      )}
       </div>
     </div>
   );
