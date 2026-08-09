@@ -280,6 +280,16 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
             tableUpdate: targetTableNum ? { tableNumber: targetTableNum, finalTotal } : undefined,
           }),
         }).catch((err) => console.warn('Cloud API sync failed:', err));
+
+        fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenantId: tenantId,
+            eventType: 'whatsapp_click',
+            details: targetTableNum ? `Pedido Mesa #${targetTableNum} - R$ ${finalTotal.toFixed(2)}` : `Novo Pedido Realizado - R$ ${finalTotal.toFixed(2)}`,
+          }),
+        }).catch((err) => console.warn('Analytics API sync failed:', err));
       } catch (e) {
         console.error('Failed to save order to KDS storage:', e);
       }

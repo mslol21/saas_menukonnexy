@@ -54,7 +54,17 @@ export default function PublicMenuPage() {
         setProducts(prods);
 
         // Record page view analytics
-        DataService.recordAnalyticsEvent(t.id, 'page_view');
+        const eventType = mesaQuery ? 'qr_scan' : 'page_view';
+        DataService.recordAnalyticsEvent(t.id, eventType, undefined, mesaQuery ? parseInt(mesaQuery, 10) : undefined);
+        fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenantId: t.id,
+            eventType: eventType,
+            details: mesaQuery ? `Leitura de QR Code na Mesa #${mesaQuery}` : 'Acesso direto ao cardápio',
+          }),
+        }).catch((e) => console.warn('Analytics API error:', e));
       }
     }
     loadData();
