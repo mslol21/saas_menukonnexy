@@ -36,13 +36,17 @@ REVOKE SELECT, INSERT, UPDATE, DELETE ON restaurant_tables FROM anon;
 REVOKE SELECT, INSERT, UPDATE, DELETE ON analytics_events FROM anon;
 
 -- Conceder permissão de tabela de base para a role 'authenticated' (Admin Logado)
--- A segurança e isolamento por restaurante serão garantidos pelas políticas de RLS abaixo
+-- EXPLÍCITO POR TABELA — evita expor tabelas futuras não auditadas
+-- A segurança de isolamento por restaurante é garantida pelas políticas de RLS abaixo
 GRANT SELECT, INSERT, UPDATE, DELETE ON tenants TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON products TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON categories TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON orders TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON restaurant_tables TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON analytics_events TO authenticated;
+
+-- Tabelas futuras nascem SEM grant — cada nova tabela requer decisão consciente de exposição
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;
 
 -- ==============================================================================
 -- 4. VIEW PÚBLICA SEGURA: public_tenants (Lê apenas colunas públicas)

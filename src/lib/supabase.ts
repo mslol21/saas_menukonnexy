@@ -278,16 +278,19 @@ export const DataService = {
   },
 
   async recordAnalyticsEvent(tenantId: string, eventType: 'page_view' | 'qr_scan' | 'product_view' | 'whatsapp_click', productId?: string, tableNumber?: number) {
-    if (isSupabaseConfigured()) {
+    // Envia o evento para a rota de API server-side (/api/analytics) que usa
+    // a Service Role Key para gravar em analytics_events no Supabase.
+    // Isso evita que a ANON_KEY (exposta no browser) tente gravar diretamente
+    // na tabela com REVOKE ativo para a role anon.
+    if (typeof window !== 'undefined') {
       try {
-        await supabase.from('analytics_events').insert({
-          tenant_id: tenantId,
-          event_type: eventType,
-          product_id: productId || null,
-          table_number: tableNumber || null,
+        await fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenantId, eventType, productId, tableNumber }),
         });
       } catch (err) {
-        console.error('Failed to log analytics:', err);
+        console.warn('Failed to record analytics event:', err);
       }
     }
   },

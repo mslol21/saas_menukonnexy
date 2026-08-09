@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { supabaseServer, isServerSupabaseConfigured } from '@/lib/supabase-server';
 
 declare global {
   var globalAnalyticsStore: Record<string, {
@@ -56,9 +56,11 @@ export async function POST(request: Request) {
 
     globalThis.globalAnalyticsStore['default'] = store;
 
-    if (isSupabaseConfigured()) {
+    // Usa Service Role Key (server-only) para gravar o evento de analytics.
+    // Necessário porque a ANON_KEY foi revogada de analytics_events via REVOKE.
+    if (isServerSupabaseConfigured() && supabaseServer) {
       try {
-        await supabase.from('analytics_events').insert({
+        await supabaseServer.from('analytics_events').insert({
           tenant_id: tenantId,
           event_type: eventType,
         });
