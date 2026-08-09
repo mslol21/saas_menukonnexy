@@ -174,6 +174,32 @@ export const DataService = {
     return true;
   },
 
+  async getPublicProductsBySlug(slug: string): Promise<Product[]> {
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.rpc('get_public_menu_products', { p_slug: slug });
+        if (data && !error && data.length > 0) return data as Product[];
+      } catch (err) {
+        console.warn('RPC products fetch failed:', err);
+      }
+    }
+    const tenant = await this.getTenantBySlug(slug);
+    return tenant ? this.getProductsByTenant(tenant.id) : MOCK_PRODUCTS;
+  },
+
+  async getPublicCategoriesBySlug(slug: string): Promise<Category[]> {
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.rpc('get_public_menu_categories', { p_slug: slug });
+        if (data && !error && data.length > 0) return data as Category[];
+      } catch (err) {
+        console.warn('RPC categories fetch failed:', err);
+      }
+    }
+    const tenant = await this.getTenantBySlug(slug);
+    return tenant ? this.getCategoriesByTenant(tenant.id) : MOCK_CATEGORIES;
+  },
+
   async getProductsByTenant(tenantId: string): Promise<Product[]> {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`konnexy_products_${tenantId}`);

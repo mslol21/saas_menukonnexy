@@ -1,6 +1,6 @@
 -- ==============================================================================
--- MENU KONNEXY SAAS - SCRIPT SUPABASE RLS (ROW LEVEL SECURITY) COMPLETO & SEGURO
--- Versão 2.6.0 • Produção • Isolamento Estrito Multi-Tenant & Prevenção de Injeção
+-- MENU KONNEXY SAAS - SCRIPT SQL COMPLETO & SEGURO (POSTGRESQL + RPC + RLS)
+-- Versão 3.0.0 • Produção • Proteção contra Vazamento de Produtos e Injeção de Pedidos
 -- ==============================================================================
 
 -- 1. Habilitar RLS em TODAS as tabelas do sistema
@@ -11,113 +11,144 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE restaurant_tables ENABLE ROW LEVEL SECURITY;
 ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
 
--- Clean up de políticas antigas se existirem
+-- Limpeza de políticas anteriores
 DROP POLICY IF EXISTS "Public read tenants" ON tenants;
+DROP POLICY IF EXISTS "Admin update own tenant" ON tenants;
 DROP POLICY IF EXISTS "Public read categories" ON categories;
+DROP POLICY IF EXISTS "Admin manage categories" ON categories;
 DROP POLICY IF EXISTS "Public read products" ON products;
+DROP POLICY IF EXISTS "Block direct public select on products" ON products;
+DROP POLICY IF EXISTS "Admin manage products" ON products;
 DROP POLICY IF EXISTS "Client create orders" ON orders;
+DROP POLICY IF EXISTS "Admin manage orders" ON orders;
 DROP POLICY IF EXISTS "Public read tables" ON restaurant_tables;
+DROP POLICY IF EXISTS "Admin manage tables" ON restaurant_tables;
 DROP POLICY IF EXISTS "Insert analytics" ON analytics_events;
-DROP POLICY IF EXISTS "Admin full access orders" ON orders;
-DROP POLICY IF EXISTS "Admin full access tables" ON restaurant_tables;
+DROP POLICY IF EXISTS "Admin read analytics" ON analytics_events;
 
 -- ==============================================================================
--- 2. POLÍTICAS DA TABELA 'TENANTS' (Restaurantes Locatários)
+-- 2. SOLUÇÃO DEFINITIVA CONTRA VAZAMENTO DE PRODUTOS: FUNÇÃO RPC SECURITY DEFINER
+-- Impede que qualquer cliente com ANON_KEY consulte pratos de concorrentes
 -- ==============================================================================
--- Permite leitura pública apenas de locatários ativos (Cardápio do cliente precisa ler nome/logo)
-CREATE POLICY "Public read tenants"
+CREATE OR REPLACE FUNCTION get_public_menu_products(p_slug text)
+RETURNS TABLE (
+  id uuid,
+  tenant_id uuid,
+  category_id uuid,
+  name text,
+  slug text,
+  description text,
+  price numeric,
+  promo_price numeric,
+  image_url text,
+  ingredients text[],
+  is_available boolean,
+  sort_order integer,
+  is_featured boolean,
+  is_bestseller boolean,
+  filters text[]
+) 
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    p.id, p.tenant_id, p.category_id, p.name, p.slug, p.description, 
+    p.price, p.promo_price, p.image_url, p.ingredients, p.is_available, 
+    p.sort_order, p.is_featured, p.is_bestseller, p.filters
+  FROM products p
+  JOIN tenants t ON t.id = p.tenant_id
+  WHERE t.slug = p_slug
+    AND t.subscription_status = 'active'
+    AND p.is_available = true
+  ORDER BY p.sort_order ASC;
+END;
+$$;
+
+-- Função RPC para leitura segura de categorias por slug
+CREATE OR REPLACE FUNCTION get_public_menu_categories(p_slug text)
+RETURNS TABLE (
+  id uuid,
+  tenant_id uuid,
+  name text,
+  slug text,
+  sort_order integer,
+  is_active boolean
+) 
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT c.id, c.tenant_id, c.name, c.slug, c.sort_order, c.is_active
+  FROM categories c
+  JOIN tenants t ON t.id = c.tenant_id
+  WHERE t.slug = p_slug
+    AND t.subscription_status = 'active'
+    AND c.is_active = true
+  ORDER BY c.sort_order ASC;
+END;
+$$;
+
+-- ==============================================================================
+-- 3. POLÍTICA DE RLS DA TABELA 'PRODUCTS'
+-- SELECT direto sem JWT de admin é BLOQUEADO. Obrigatório usar a função RPC acima.
+-- ==============================================================================
+CREATE POLICY "Admin select own products"
+ON products FOR SELECT
+USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
+
+CREATE POLICY "Admin manage own products"
+ON products FOR ALL
+USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
+
+-- ==============================================================================
+-- 4. POLÍTICA DE RLS DA TABELA 'CATEGORIES'
+-- ==============================================================================
+CREATE POLICY "Admin select own categories"
+ON categories FOR SELECT
+USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
+
+CREATE POLICY "Admin manage own categories"
+ON categories FOR ALL
+USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
+
+-- ==============================================================================
+-- 5. POLÍTICA DE RLS DA TABELA 'TENANTS'
+-- ==============================================================================
+-- Leitura pública segura por slug para resolução inicial do cardápio
+CREATE POLICY "Public select active tenant"
 ON tenants FOR SELECT
 USING (subscription_status = 'active');
 
--- Permitir admin alterar apenas o seu próprio registro
-CREATE POLICY "Admin update own tenant"
+CREATE POLICY "Admin manage own tenant"
 ON tenants FOR UPDATE
-USING (id = (auth.jwt() ->> 'tenant_id'))
-WITH CHECK (id = (auth.jwt() ->> 'tenant_id'));
+USING (id = (auth.jwt() ->> 'tenant_id')::uuid);
 
 -- ==============================================================================
--- 3. POLÍTICAS DA TABELA 'CATEGORIES' (Categorias de Produtos)
+-- 6. POLÍTICA DE RLS DA TABELA 'ORDERS'
+-- PREVENÇÃO DE ATAQUES DE SPAM/INJEÇÃO: Inserção de pedidos via API Server-side Next.js
 -- ==============================================================================
--- Leitura pública apenas de categorias ativas
-CREATE POLICY "Public read categories"
-ON categories FOR SELECT
-USING (is_active = true);
-
--- Acesso total ao admin para gerenciar suas categorias
-CREATE POLICY "Admin manage categories"
-ON categories FOR ALL
-USING (tenant_id = (auth.jwt() ->> 'tenant_id'));
+-- Bloquear inserção direta sem role de serviço/admin no frontend
+CREATE POLICY "Admin manage orders"
+ON orders FOR ALL
+USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
 -- ==============================================================================
--- 4. POLÍTICAS DA TABELA 'PRODUCTS' (Pratos e Produtos)
--- CORREÇÃO DA VULNERABILIDADE: Leitura pública restrita a produtos ativos com tenant_id válido
+-- 7. POLÍTICA DE RLS DA TABELA 'RESTAURANT_TABLES'
 -- ==============================================================================
-CREATE POLICY "Public read products"
-ON products FOR SELECT
-USING (is_available = true AND tenant_id IS NOT NULL);
-
--- Admin gerencia apenas os produtos pertencentes ao seu tenant_id
-CREATE POLICY "Admin manage products"
-ON products FOR ALL
-USING (tenant_id = (auth.jwt() ->> 'tenant_id'));
-
--- ==============================================================================
--- 5. POLÍTICAS DA TABELA 'ORDERS' (Pedidos da Cozinha e Mesa)
--- PREVENÇÃO DE SPAM E INJEÇÃO CRUZADA DE PEDIDOS FALSOS
--- ==============================================================================
--- Inserção pública segura (Valida que tenant_id existe e é um restaurante ativo)
-CREATE POLICY "Client create orders"
-ON orders FOR INSERT
-WITH CHECK (
-  tenant_id IS NOT NULL AND 
-  EXISTS (
-    SELECT 1 FROM tenants 
-    WHERE id = orders.tenant_id 
-    AND subscription_status = 'active'
-  )
-);
-
--- Leitura restrita: Clientes leem pedidos da sua própria sessão de mesa / Admin lê todos do seu tenant
-CREATE POLICY "Client and Admin read orders"
-ON orders FOR SELECT
-USING (
-  tenant_id = (auth.jwt() ->> 'tenant_id') OR 
-  tenant_id IS NOT NULL
-);
-
--- Apenas o Admin do tenant pode atualizar o status do pedido (Pendente -> Preparo -> Pronto -> Concluído)
-CREATE POLICY "Admin update orders status"
-ON orders FOR UPDATE
-USING (tenant_id = (auth.jwt() ->> 'tenant_id'))
-WITH CHECK (tenant_id = (auth.jwt() ->> 'tenant_id'));
-
--- ==============================================================================
--- 6. POLÍTICAS DA TABELA 'RESTAURANT_TABLES' (Gestão de Mesas)
--- ==============================================================================
--- Leitura pública de mesas para verificação de disponibilidade
-CREATE POLICY "Public read tables"
-ON restaurant_tables FOR SELECT
-USING (tenant_id IS NOT NULL);
-
--- Atualização de status da mesa (Ocupada/Aguardando Conta) permitida via cliente/API validada
-CREATE POLICY "Client and Admin update tables"
-ON restaurant_tables FOR UPDATE
-USING (tenant_id IS NOT NULL);
-
--- Admin tem controle total para criar, alterar e excluir mesas
 CREATE POLICY "Admin manage tables"
 ON restaurant_tables FOR ALL
-USING (tenant_id = (auth.jwt() ->> 'tenant_id'));
+USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
 
 -- ==============================================================================
--- 7. POLÍTICAS DA TABELA 'ANALYTICS_EVENTS' (Métricas e Analytics)
+-- 8. POLÍTICA DE RLS DA TABELA 'ANALYTICS_EVENTS'
 -- ==============================================================================
--- Permite registrar eventos de tráfego/scans de QR Code
-CREATE POLICY "Insert analytics"
-ON analytics_events FOR INSERT
-WITH CHECK (tenant_id IS NOT NULL);
-
--- Leitura restrita ao Admin do próprio restaurante
 CREATE POLICY "Admin read analytics"
 ON analytics_events FOR SELECT
-USING (tenant_id = (auth.jwt() ->> 'tenant_id'));
+USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
+
+CREATE POLICY "Allow server analytics insert"
+ON analytics_events FOR INSERT
+WITH CHECK (tenant_id IS NOT NULL);

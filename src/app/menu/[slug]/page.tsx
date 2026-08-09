@@ -48,8 +48,8 @@ export default function PublicMenuPage() {
       const t = await DataService.getTenantBySlug(slug);
       setTenant(t);
       if (t) {
-        const cats = await DataService.getCategoriesByTenant(t.id);
-        const prods = await DataService.getProductsByTenant(t.id);
+        const cats = await DataService.getPublicCategoriesBySlug(slug);
+        const prods = await DataService.getPublicProductsBySlug(slug);
         setCategories(cats);
         setProducts(prods);
 
