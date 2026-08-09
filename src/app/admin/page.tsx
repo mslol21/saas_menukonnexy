@@ -75,7 +75,7 @@ export default function TenantAdminPage() {
           {activeTab === 'profile' && <RestaurantProfileForm tenant={userTenant} onSave={updateUserTenant} />}
           {activeTab === 'categories' && <CategoriesManager categories={categories} onUpdateCategories={handleUpdateCategories} />}
           {activeTab === 'products' && <ProductsManager products={products} categories={categories} onUpdateProducts={handleUpdateProducts} />}
-          {activeTab === 'qrcode' && <QRCodeStudio tenantSlug={userTenant.slug} tenantName={userTenant.name} />}
+          {activeTab === 'qrcode' && <QRCodeStudio tenantSlug={userTenant.slug} tenantName={userTenant.name} tenantId={userTenant.id} />}
           {activeTab === 'subscription' && <SubscriptionCard tenant={userTenant} />}
         </main>
       </div>

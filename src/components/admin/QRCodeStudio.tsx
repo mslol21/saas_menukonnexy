@@ -58,7 +58,11 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
   // Load tables from localStorage
   const loadTables = () => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`konnexy_tables_${tenantId}`);
+      const saved =
+        localStorage.getItem(`konnexy_tables_${tenantId}`) ||
+        localStorage.getItem(`konnexy_tables_${tenantSlug}`) ||
+        localStorage.getItem('konnexy_tables_t-1') ||
+        localStorage.getItem('konnexy_tables_default');
       if (saved) {
         try {
           setTables(JSON.parse(saved));
@@ -69,31 +73,50 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
         // Initial Demo Tables
         const demoTables: RestaurantTable[] = [
           { id: 't-1', tenant_id: tenantId, number: '01', name: 'Mesa 01 - Varanda', capacity: 2, status: 'available' },
-          { id: 't-2', tenant_id: tenantId, number: '02', name: 'Mesa 02 - Salão Principal', capacity: 4, status: 'occupied', active_total: 124.90, orders_count: 3 },
-          { id: 't-3', tenant_id: tenantId, number: '03', name: 'Mesa 03 - Salão Principal', capacity: 4, status: 'closing', active_total: 89.00, orders_count: 2 },
-          { id: 't-4', tenant_id: tenantId, number: '04', name: 'Mesa 04 - Área Externa', capacity: 6, status: 'reserved' },
+          { id: 't-2', tenant_id: tenantId, number: '02', name: 'Mesa 02 - Salão Principal', capacity: 4, status: 'available' },
+          { id: 't-3', tenant_id: tenantId, number: '03', name: 'Mesa 03 - Salão Principal', capacity: 4, status: 'available' },
+          { id: 't-4', tenant_id: tenantId, number: '04', name: 'Mesa 04 - Área Externa', capacity: 6, status: 'available' },
           { id: 't-5', tenant_id: tenantId, number: '05', name: 'Mesa 05 - Salão VIP', capacity: 8, status: 'available' },
         ];
         setTables(demoTables);
         localStorage.setItem(`konnexy_tables_${tenantId}`, JSON.stringify(demoTables));
+        localStorage.setItem('konnexy_tables_default', JSON.stringify(demoTables));
       }
     }
   };
 
   useEffect(() => {
     loadTables();
-    const interval = setInterval(loadTables, 2000);
+    const interval = setInterval(loadTables, 1500);
     window.addEventListener('storage', loadTables);
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel('konnexy_realtime_sync');
+      bc.onmessage = () => loadTables();
+    } catch (e) {}
     return () => {
       clearInterval(interval);
       window.removeEventListener('storage', loadTables);
+      if (bc) bc.close();
     };
-  }, [tenantId]);
+  }, [tenantId, tenantSlug]);
 
   const saveTablesToStorage = (updated: RestaurantTable[]) => {
     setTables(updated);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(`konnexy_tables_${tenantId}`, JSON.stringify(updated));
+      const keys = Array.from(new Set([
+        `konnexy_tables_${tenantId}`,
+        `konnexy_tables_${tenantSlug}`,
+        'konnexy_tables_t-1',
+        'konnexy_tables_default',
+      ]));
+      keys.forEach((k) => localStorage.setItem(k, JSON.stringify(updated)));
+      window.dispatchEvent(new Event('storage'));
+      try {
+        const bc = new BroadcastChannel('konnexy_realtime_sync');
+        bc.postMessage({ type: 'TABLES_UPDATED' });
+        bc.close();
+      } catch (e) {}
     }
   };
 

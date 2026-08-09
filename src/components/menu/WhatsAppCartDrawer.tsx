@@ -166,61 +166,65 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
     const targetTableNum = tableNumber || (orderType === 'table' ? '01' : '');
     if (targetTableNum && tenantId) {
       try {
-        const storageKey = `konnexy_tables_${tenantId}`;
-        const saved = localStorage.getItem(storageKey);
-        let tablesList: any[] = [];
-        if (saved) {
-          try { tablesList = JSON.parse(saved); } catch (e) {}
-        }
-
-        if (tablesList.length === 0) {
-          tablesList = [
-            { id: 't-1', tenant_id: tenantId, number: '01', name: 'Mesa 01 - Varanda', capacity: 2, status: 'available' },
-            { id: 't-2', tenant_id: tenantId, number: '02', name: 'Mesa 02 - Salão Principal', capacity: 4, status: 'available' },
-            { id: 't-3', tenant_id: tenantId, number: '03', name: 'Mesa 03 - Salão Principal', capacity: 4, status: 'available' },
-            { id: 't-4', tenant_id: tenantId, number: '04', name: 'Mesa 04 - Área Externa', capacity: 6, status: 'available' },
-            { id: 't-5', tenant_id: tenantId, number: '05', name: 'Mesa 05 - Salão VIP', capacity: 8, status: 'available' },
-          ];
-        }
-
-        const cleanNum = targetTableNum.replace(/\D/g, '') || targetTableNum;
-        const targetInt = parseInt(cleanNum, 10);
-
-        let tableFound = false;
-        const updated = tablesList.map((t) => {
-          const tInt = parseInt((t.number || '').replace(/\D/g, ''), 10);
-          if (
-            t.number === targetTableNum ||
-            t.number === cleanNum ||
-            t.number === cleanNum.padStart(2, '0') ||
-            (targetInt && tInt === targetInt)
-          ) {
-            tableFound = true;
-            return {
-              ...t,
-              status: 'occupied',
-              active_total: (t.active_total || 0) + finalTotal,
-              orders_count: (t.orders_count || 0) + 1,
-            };
+        const tableKeys = Array.from(new Set([`konnexy_tables_${tenantId}`, 'konnexy_tables_t-1', 'konnexy_tables_default']));
+        
+        tableKeys.forEach((storageKey) => {
+          const saved = localStorage.getItem(storageKey);
+          let tablesList: any[] = [];
+          if (saved) {
+            try { tablesList = JSON.parse(saved); } catch (e) {}
           }
-          return t;
+
+          if (tablesList.length === 0) {
+            tablesList = [
+              { id: 't-1', tenant_id: tenantId, number: '01', name: 'Mesa 01 - Varanda', capacity: 2, status: 'available' },
+              { id: 't-2', tenant_id: tenantId, number: '02', name: 'Mesa 02 - Salão Principal', capacity: 4, status: 'available' },
+              { id: 't-3', tenant_id: tenantId, number: '03', name: 'Mesa 03 - Salão Principal', capacity: 4, status: 'available' },
+              { id: 't-4', tenant_id: tenantId, number: '04', name: 'Mesa 04 - Área Externa', capacity: 6, status: 'available' },
+              { id: 't-5', tenant_id: tenantId, number: '05', name: 'Mesa 05 - Salão VIP', capacity: 8, status: 'available' },
+            ];
+          }
+
+          const cleanNum = targetTableNum.replace(/\D/g, '') || targetTableNum;
+          const targetInt = parseInt(cleanNum, 10);
+
+          let tableFound = false;
+          const updated = tablesList.map((t) => {
+            const tInt = parseInt((t.number || '').replace(/\D/g, ''), 10);
+            if (
+              t.number === targetTableNum ||
+              t.number === cleanNum ||
+              t.number === cleanNum.padStart(2, '0') ||
+              (targetInt && tInt === targetInt)
+            ) {
+              tableFound = true;
+              return {
+                ...t,
+                status: 'occupied',
+                active_total: (t.active_total || 0) + finalTotal,
+                orders_count: (t.orders_count || 0) + 1,
+              };
+            }
+            return t;
+          });
+
+          if (!tableFound) {
+            const numFormatted = cleanNum.padStart(2, '0');
+            updated.push({
+              id: `tbl-${Date.now()}`,
+              tenant_id: tenantId,
+              number: numFormatted,
+              name: `Mesa ${numFormatted}`,
+              capacity: 4,
+              status: 'occupied',
+              active_total: finalTotal,
+              orders_count: 1,
+            });
+          }
+
+          localStorage.setItem(storageKey, JSON.stringify(updated));
         });
 
-        if (!tableFound) {
-          const numFormatted = cleanNum.padStart(2, '0');
-          updated.push({
-            id: `tbl-${Date.now()}`,
-            tenant_id: tenantId,
-            number: numFormatted,
-            name: `Mesa ${numFormatted}`,
-            capacity: 4,
-            status: 'occupied',
-            active_total: finalTotal,
-            orders_count: 1,
-          });
-        }
-
-        localStorage.setItem(storageKey, JSON.stringify(updated));
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('storage'));
         }
@@ -232,30 +236,39 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
     // Save order into KDS (Kitchen Display System) orders list
     if (tenantId) {
       try {
-        const ordersKey = `konnexy_orders_${tenantId}`;
-        const existingOrders = localStorage.getItem(ordersKey);
-        let ordersList: KitchenOrder[] = [];
-        if (existingOrders) {
-          try {
-            ordersList = JSON.parse(existingOrders);
-          } catch (e) {}
-        }
+        const orderKeys = Array.from(new Set([`konnexy_orders_${tenantId}`, 'konnexy_orders_t-1', 'konnexy_orders_default']));
         const newOrder: KitchenOrder = {
           id: `ord-${Date.now()}`,
           tenant_id: tenantId,
           customer_name: customerName,
           order_type: orderType,
-          table_number: tableNumber || undefined,
+          table_number: targetTableNum || undefined,
           payment_method: paymentMethod,
           items: items.map((i) => ({ ...i })),
           total_amount: finalTotal,
           status: 'pending',
           created_at: new Date().toISOString(),
         };
-        ordersList.unshift(newOrder);
-        localStorage.setItem(ordersKey, JSON.stringify(ordersList));
+
+        orderKeys.forEach((ordersKey) => {
+          const existingOrders = localStorage.getItem(ordersKey);
+          let ordersList: KitchenOrder[] = [];
+          if (existingOrders) {
+            try {
+              ordersList = JSON.parse(existingOrders);
+            } catch (e) {}
+          }
+          ordersList.unshift(newOrder);
+          localStorage.setItem(ordersKey, JSON.stringify(ordersList));
+        });
+
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('storage'));
+          try {
+            const bc = new BroadcastChannel('konnexy_realtime_sync');
+            bc.postMessage({ type: 'ORDER_PLACED', tenantId, tableNumber: targetTableNum });
+            bc.close();
+          } catch (e) {}
         }
       } catch (e) {
         console.error('Failed to save order to KDS storage:', e);
