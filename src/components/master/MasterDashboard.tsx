@@ -386,50 +386,56 @@ export const MasterDashboard: React.FC = () => {
             Esta função é exclusiva do **Super Admin Master**. Selecione a paleta de cores primária, modo de exibição e estilo visual para a página pública deste usuário.
           </p>
 
-          {/* Paletas de Cores e Gradientes Pré-definidas */}
+          {/* Paletas de Gradiente Completas */}
           <div>
-            <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-400" /> Paletas & Temas de Gradiente Prontos
+            <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" /> Temas de Gradiente — Escolha uma Paleta Pronta
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
               {[
-                { id: 'emerald', name: '🌿 Esmeralda Luxury', primary: '#10b981', secondary: '#059669', bgStart: '#03180e', bgEnd: '#0b2d1c', mode: 'gradient', style: 'glass' },
-                { id: 'coffee', name: '☕ Café & Avelã Moka', primary: '#d97706', secondary: '#92400e', bgStart: '#170c08', bgEnd: '#2d170e', mode: 'gradient', style: 'glass' },
-                { id: 'cyber', name: '🪐 Cyber Neon Roxo', primary: '#a855f7', secondary: '#ec4899', bgStart: '#0b0518', bgEnd: '#1e0a38', mode: 'gradient', style: 'vibrant' },
-                { id: 'sunset', name: '🍔 Sunset Grill Fogo', primary: '#f97316', secondary: '#ef4444', bgStart: '#190704', bgEnd: '#330f08', mode: 'gradient', style: 'vibrant' },
-                { id: 'sapphire', name: '💎 Royal Sapphire Ocean', primary: '#06b6d4', secondary: '#3b82f6', bgStart: '#040f1a', bgEnd: '#0a2238', mode: 'gradient', style: 'glass' },
-                { id: 'cream', name: '🍦 Creme & Vanilla Soft', primary: '#059669', secondary: '#d97706', bgStart: '#f7f4ef', bgEnd: '#eae2d6', mode: 'light', style: 'luxury' },
+                { id: 'emerald',  name: '🌿 Esmeralda Luxury',     primary: '#10b981', secondary: '#059669', bgStart: '#03180e', bgEnd: '#0b2d1c', mode: 'gradient', style: 'glass' },
+                { id: 'coffee',   name: '☕ Café & Avelã Moka',     primary: '#d97706', secondary: '#92400e', bgStart: '#170c08', bgEnd: '#2d170e', mode: 'gradient', style: 'glass' },
+                { id: 'cyber',    name: '🪐 Cyber Neon Roxo',       primary: '#a855f7', secondary: '#ec4899', bgStart: '#0b0518', bgEnd: '#1e0a38', mode: 'gradient', style: 'vibrant' },
+                { id: 'sunset',   name: '🔥 Sunset Grill Fogo',     primary: '#f97316', secondary: '#ef4444', bgStart: '#190704', bgEnd: '#330f08', mode: 'gradient', style: 'vibrant' },
+                { id: 'sapphire', name: '💎 Royal Sapphire',        primary: '#06b6d4', secondary: '#3b82f6', bgStart: '#040f1a', bgEnd: '#0a2238', mode: 'gradient', style: 'glass' },
+                { id: 'cream',    name: '🍦 Vanilla Soft Light',    primary: '#059669', secondary: '#d97706', bgStart: '#f7f4ef', bgEnd: '#eae2d6', mode: 'light',    style: 'luxury' },
+                { id: 'rose',     name: '🌹 Rose & Pink Rouge',     primary: '#f43f5e', secondary: '#e11d48', bgStart: '#1a0309', bgEnd: '#2d0618', mode: 'gradient', style: 'vibrant' },
+                { id: 'midnight', name: '🌌 Midnight Indigo',       primary: '#818cf8', secondary: '#6366f1', bgStart: '#06060f', bgEnd: '#0e0e2a', mode: 'gradient', style: 'glass' },
+                { id: 'forest',   name: '🌲 Deep Forest Verde',     primary: '#22c55e', secondary: '#16a34a', bgStart: '#030f06', bgEnd: '#071a0c', mode: 'gradient', style: 'glass' },
+                { id: 'ocean',    name: '🌊 Ocean Blue Profundo',   primary: '#38bdf8', secondary: '#0ea5e9', bgStart: '#020d17', bgEnd: '#061828', mode: 'gradient', style: 'glass' },
+                { id: 'volcanic', name: '🌋 Volcanic Brasa',        primary: '#fb923c', secondary: '#f97316', bgStart: '#140500', bgEnd: '#2a0c00', mode: 'gradient', style: 'vibrant' },
+                { id: 'aurora',   name: '🌠 Aurora Boreal',         primary: '#34d399', secondary: '#06b6d4', bgStart: '#020f1a', bgEnd: '#0a1f12', mode: 'gradient', style: 'glass' },
+                { id: 'charcoal', name: '🩶 Charcoal Elegante',     primary: '#94a3b8', secondary: '#64748b', bgStart: '#0a0a0a', bgEnd: '#1a1a1a', mode: 'gradient', style: 'minimal' },
+                { id: 'golden',   name: '✨ Golden Luxe',           primary: '#fbbf24', secondary: '#f59e0b', bgStart: '#120c00', bgEnd: '#241800', mode: 'gradient', style: 'luxury' },
+                { id: 'nordic',   name: '❄️ Nordic Ice Blue',       primary: '#7dd3fc', secondary: '#38bdf8', bgStart: '#030c18', bgEnd: '#0b1c32', mode: 'gradient', style: 'glass' },
               ].map((pal) => (
                 <button
                   key={pal.id}
                   type="button"
-                  onClick={() =>
-                    setThemeConfig({
-                      primary_color: pal.primary,
-                      secondary_color: pal.secondary,
-                      mode: pal.mode as any,
-                      style: pal.style as any,
-                      gradient_preset: pal.id as any,
-                      bg_gradient_start: pal.bgStart,
-                      bg_gradient_end: pal.bgEnd,
-                    })
-                  }
-                  className={`p-3 rounded-2xl border text-left space-y-1.5 transition-all relative overflow-hidden group ${
+                  onClick={() => setThemeConfig({
+                    primary_color: pal.primary,
+                    secondary_color: pal.secondary,
+                    mode: pal.mode as any,
+                    style: pal.style as any,
+                    gradient_preset: pal.id as any,
+                    bg_gradient_start: pal.bgStart,
+                    bg_gradient_end: pal.bgEnd,
+                  })}
+                  className={`p-2.5 rounded-2xl border text-left space-y-1.5 transition-all group ${
                     themeConfig.gradient_preset === pal.id
                       ? 'border-amber-400 bg-white/10 ring-2 ring-amber-500/40 shadow-xl'
                       : 'glass-panel border-white/10 hover:border-white/20'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white">{pal.name}</span>
-                    <div className="flex items-center gap-1">
-                      <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: pal.primary }} />
-                      <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: pal.secondary }} />
+                    <span className="text-[11px] font-bold text-white leading-tight">{pal.name}</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: pal.primary }} />
+                      <span className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: pal.secondary }} />
                     </div>
                   </div>
-                  {/* Mini Gradient Preview Bar */}
                   <div
-                    className="h-2 rounded-full w-full border border-white/10"
+                    className="h-1.5 rounded-full w-full border border-white/10"
                     style={{ background: `linear-gradient(to right, ${pal.bgStart}, ${pal.bgEnd})` }}
                   />
                 </button>
@@ -437,91 +443,82 @@ export const MasterDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Primary Color Picker */}
+          {/* Cor Primária Customizada */}
           <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Cor de Destaque Primária Personalizada</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {colorOptions.map((c) => (
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">🎨 Cor de Destaque Personalizada</label>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {[
+                { label: 'Laranja',    hex: '#FF5722' },
+                { label: 'Vermelho',   hex: '#E11D48' },
+                { label: 'Ciano',      hex: '#06B6D4' },
+                { label: 'Dourado',    hex: '#B8860B' },
+                { label: 'Roxo',       hex: '#8B5CF6' },
+                { label: 'Verde',      hex: '#10B981' },
+                { label: 'Âmbar',      hex: '#F59E0B' },
+                { label: 'Rosa',       hex: '#F43F5E' },
+                { label: 'Índigo',     hex: '#6366F1' },
+                { label: 'Azul Royal', hex: '#3B82F6' },
+                { label: 'Lima',       hex: '#84CC16' },
+                { label: 'Coral',      hex: '#FB7185' },
+              ].map((c) => (
                 <button
                   key={c.hex}
                   type="button"
                   onClick={() => setThemeConfig({ ...themeConfig, primary_color: c.hex, gradient_preset: 'custom' })}
-                  className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all ${
-                    themeConfig.primary_color === c.hex ? 'bg-white/10 border-amber-400 shadow-lg scale-105' : 'glass-panel border-white/10 text-zinc-400'
+                  title={c.label}
+                  className={`h-9 rounded-xl border-2 transition-all ${
+                    themeConfig.primary_color === c.hex && themeConfig.gradient_preset === 'custom'
+                      ? 'border-white scale-110 shadow-lg'
+                      : 'border-transparent hover:border-white/40'
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Modo de Fundo */}
+          <div>
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">🌗 Modo de Fundo</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 'gradient', label: '✨ Gradiente Temático', icon: <Sparkles className="w-3.5 h-3.5" /> },
+                { value: 'dark',     label: '🌑 Dark Mode',          icon: <Moon className="w-3.5 h-3.5" /> },
+                { value: 'light',    label: '☀️ Light Mode',          icon: <Sun className="w-3.5 h-3.5" /> },
+              ].map((m) => (
+                <button key={m.value} type="button"
+                  onClick={() => setThemeConfig({ ...themeConfig, mode: m.value as any })}
+                  className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    themeConfig.mode === m.value ? 'bg-amber-500 text-zinc-950 border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
                   }`}
                 >
-                  <span className="w-4 h-4 rounded-full shrink-0 shadow-md" style={{ backgroundColor: c.hex }} />
-                  <span className="truncate">{c.label}</span>
+                  {m.icon} {m.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Theme Mode Toggle */}
+          {/* Estilo Visual */}
           <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Modo / Estilo do Fundo</label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setThemeConfig({ ...themeConfig, mode: 'gradient' })}
-                className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 ${
-                  themeConfig.mode === 'gradient' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
-                }`}
-              >
-                <Sparkles className="w-4 h-4" /> Gradiente Temático
-              </button>
-              <button
-                type="button"
-                onClick={() => setThemeConfig({ ...themeConfig, mode: 'dark' })}
-                className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 ${
-                  themeConfig.mode === 'dark' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
-                }`}
-              >
-                <Moon className="w-4 h-4" /> Dark Mode (Escuro)
-              </button>
-              <button
-                type="button"
-                onClick={() => setThemeConfig({ ...themeConfig, mode: 'light' })}
-                className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 ${
-                  themeConfig.mode === 'light' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
-                }`}
-              >
-                <Sun className="w-4 h-4" /> Light Mode (Creme)
-              </button>
-            </div>
-          </div>
-
-          {/* Visual Style Selection */}
-          <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">Estilo Visual dos Cards</label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setThemeConfig({ ...themeConfig, style: 'glass' })}
-                className={`p-2.5 rounded-xl border text-xs font-bold ${
-                  themeConfig.style === 'glass' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400' : 'glass-panel text-zinc-400 border-white/10'
-                }`}
-              >
-                Glassmorphism
-              </button>
-              <button
-                type="button"
-                onClick={() => setThemeConfig({ ...themeConfig, style: 'minimal' })}
-                className={`p-2.5 rounded-xl border text-xs font-bold ${
-                  themeConfig.style === 'minimal' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400' : 'glass-panel text-zinc-400 border-white/10'
-                }`}
-              >
-                Minimalista
-              </button>
-              <button
-                type="button"
-                onClick={() => setThemeConfig({ ...themeConfig, style: 'vibrant' })}
-                className={`p-2.5 rounded-xl border text-xs font-bold ${
-                  themeConfig.style === 'vibrant' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400' : 'glass-panel text-zinc-400 border-white/10'
-                }`}
-              >
-                Vibrante
-              </button>
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">💅 Estilo Visual dos Cards</label>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              {[
+                { value: 'glass',    label: '🪟 Glassmorphism', desc: 'Vidro translúcido' },
+                { value: 'minimal',  label: '◽ Minimalista',   desc: 'Clean & leve' },
+                { value: 'vibrant',  label: '🎆 Vibrante',      desc: 'Cores intensas' },
+                { value: 'luxury',   label: '👑 Luxury',        desc: 'Premium & sofisticado' },
+                { value: 'neon',     label: '⚡ Neon Glow',     desc: 'Brilho neon' },
+              ].map((s) => (
+                <button key={s.value} type="button"
+                  onClick={() => setThemeConfig({ ...themeConfig, style: s.value as any })}
+                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                    themeConfig.style === s.value ? 'bg-amber-500 text-zinc-950 border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="text-xs font-bold">{s.label}</div>
+                  <div className="text-[10px] opacity-70">{s.desc}</div>
+                </button>
+              ))}
             </div>
           </div>
 

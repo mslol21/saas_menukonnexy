@@ -25,8 +25,11 @@ export interface TenantThemeConfig {
   primary_color: string;
   secondary_color?: string;
   mode: 'dark' | 'light' | 'gradient';
-  style: 'glass' | 'minimal' | 'vibrant' | 'luxury';
-  gradient_preset?: 'emerald' | 'sunset' | 'coffee' | 'cyber' | 'sapphire' | 'cream' | 'custom';
+  style: 'glass' | 'minimal' | 'vibrant' | 'luxury' | 'neon';
+  gradient_preset?:
+    | 'emerald' | 'sunset' | 'coffee' | 'cyber' | 'sapphire' | 'cream'
+    | 'rose' | 'midnight' | 'forest' | 'ocean' | 'volcanic' | 'aurora'
+    | 'charcoal' | 'golden' | 'nordic' | 'custom';
   bg_gradient_start?: string;
   bg_gradient_end?: string;
 }

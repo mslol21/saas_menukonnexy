@@ -116,13 +116,25 @@ export default function PublicMenuPage() {
 
   // Map preset backgrounds
   const PRESET_BG: Record<string, { primary: string; bgStart: string; bgEnd: string; isCream?: boolean }> = {
-    emerald: { primary: '#10b981', bgStart: '#03180e', bgEnd: '#0b2d1c' },
-    coffee: { primary: '#d97706', bgStart: '#170c08', bgEnd: '#2d170e' },
-    cyber: { primary: '#a855f7', bgStart: '#0b0518', bgEnd: '#1e0a38' },
-    sunset: { primary: '#f97316', bgStart: '#190704', bgEnd: '#330f08' },
+    // Originais
+    emerald:  { primary: '#10b981', bgStart: '#03180e', bgEnd: '#0b2d1c' },
+    coffee:   { primary: '#d97706', bgStart: '#170c08', bgEnd: '#2d170e' },
+    cyber:    { primary: '#a855f7', bgStart: '#0b0518', bgEnd: '#1e0a38' },
+    sunset:   { primary: '#f97316', bgStart: '#190704', bgEnd: '#330f08' },
     sapphire: { primary: '#06b6d4', bgStart: '#040f1a', bgEnd: '#0a2238' },
-    cream: { primary: '#059669', bgStart: '#f7f4ef', bgEnd: '#eae2d6', isCream: true },
+    cream:    { primary: '#059669', bgStart: '#f7f4ef', bgEnd: '#eae2d6', isCream: true },
+    // Novos
+    rose:     { primary: '#f43f5e', bgStart: '#1a0309', bgEnd: '#2d0618' },
+    midnight: { primary: '#818cf8', bgStart: '#06060f', bgEnd: '#0e0e2a' },
+    forest:   { primary: '#22c55e', bgStart: '#030f06', bgEnd: '#071a0c' },
+    ocean:    { primary: '#38bdf8', bgStart: '#020d17', bgEnd: '#061828' },
+    volcanic: { primary: '#fb923c', bgStart: '#140500', bgEnd: '#2a0c00' },
+    aurora:   { primary: '#34d399', bgStart: '#020f1a', bgEnd: '#0a1f12' },
+    charcoal: { primary: '#94a3b8', bgStart: '#0a0a0a', bgEnd: '#1a1a1a' },
+    golden:   { primary: '#fbbf24', bgStart: '#120c00', bgEnd: '#241800' },
+    nordic:   { primary: '#7dd3fc', bgStart: '#030c18', bgEnd: '#0b1c32', isCream: false },
   };
+
 
   const preset = themeConfig.gradient_preset ? PRESET_BG[themeConfig.gradient_preset] : null;
 
