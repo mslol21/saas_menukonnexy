@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured, DataService } from '@/lib/supabase';
-import { UserProfile, Tenant } from '@/types';
+import { UserProfile, Tenant, FilterTag } from '@/types';
+import { SECTOR_TEMPLATES } from '@/lib/templates';
 
 interface AuthContextType {
   user: any | null;
@@ -12,7 +13,7 @@ interface AuthContextType {
   updateUserTenant: (updated: Tenant) => Promise<void>;
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<{ error?: string }>;
-  signup: (email: string, pass: string, restaurantName: string) => Promise<{ error?: string }>;
+  signup: (email: string, pass: string, restaurantName: string, sectorId?: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -163,17 +164,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return {};
   };
 
-  const signup = async (email: string, pass: string, restaurantName: string) => {
+  const signup = async (email: string, pass: string, restaurantName: string, sectorId?: string) => {
     const slugBase = restaurantName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
     const cleanSlug = `${slugBase || 'restaurante'}-${Date.now().toString().slice(-4)}`;
+
+    // Resolve template do setor selecionado (padrão: hamburgueria)
+    const template = SECTOR_TEMPLATES.find((t) => t.id === (sectorId || 'hamburgueria')) || SECTOR_TEMPLATES[0];
 
     const newTenant: Tenant = {
       id: `t-${Date.now()}`,
       owner_id: `u-${Date.now()}`,
       name: restaurantName,
       slug: cleanSlug,
-      logo_url: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=300&h=300&fit=crop',
-      banner_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&h=500&fit=crop',
+      logo_url: template.defaultLogo,
+      banner_url: template.defaultBanner,
       description: `Cardápio digital inteligente de ${restaurantName}`,
       phone: '(11) 99999-8888',
       whatsapp: '5511999998888',
@@ -182,7 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription_status: 'active',
       subscription_plan: 'monthly',
       expires_at: '2027-12-31T23:59:59.000Z',
-      theme_config: { primary_color: '#FF5722', mode: 'dark', style: 'glass' },
+      theme_config: template.theme,
       created_at: new Date().toISOString(),
     };
 
@@ -194,6 +198,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (typeof window !== 'undefined') {
       localStorage.setItem('konnexy_user_tenant', JSON.stringify(newTenant));
     }
+
+    // Aplicar categorias e produtos do template do setor selecionado
+    const tenantId = newTenant.id;
+    const templateCats = template.categories.map((c, i) => ({
+      id: `cat-${template.id}-${i}`,
+      tenant_id: tenantId,
+      name: c.name,
+      slug: c.slug,
+      sort_order: c.sort_order,
+      is_active: true,
+    }));
+    const templateProds = template.products.map((p, i) => ({
+      id: `prod-${template.id}-${i}`,
+      tenant_id: tenantId,
+      category_id: `cat-${template.id}-${templateCats.find((c) => c.slug === p.category_slug)?.sort_order || 0}`,
+      name: p.name,
+      slug: p.slug,
+      description: p.description,
+      price: p.price,
+      promo_price: p.promo_price,
+      image_url: p.image_url,
+      ingredients: p.ingredients || [],
+      is_available: true,
+      sort_order: i + 1,
+      is_featured: p.is_featured || false,
+      is_bestseller: p.is_bestseller || false,
+      filters: (p.filters || []) as FilterTag[],
+    }));
+    await DataService.saveCategories(tenantId, templateCats);
+    await DataService.saveProducts(tenantId, templateProds);
 
     if (isSupabaseConfigured()) {
       try {

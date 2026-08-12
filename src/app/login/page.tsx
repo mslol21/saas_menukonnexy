@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { ArrowRight, Lock, Mail, Store, AlertCircle } from 'lucide-react';
+import { ArrowRight, Lock, Mail, Store, AlertCircle, ChevronDown } from 'lucide-react';
+import { SECTOR_TEMPLATES } from '@/lib/templates';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
+  const [sectorId, setSectorId] = useState('hamburgueria');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,7 +32,7 @@ export default function LoginPage() {
           setIsSubmitting(false);
           return;
         }
-        const res = await signup(email, password, restaurantName);
+        const res = await signup(email, password, restaurantName, sectorId);
         if (res.error) {
           setErrorMsg(res.error);
           setIsSubmitting(false);
@@ -93,6 +95,29 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+          )}
+
+          {isRegister && (
+          <div>
+            <label className="block text-xs font-bold text-zinc-300 mb-2">Categoria do Estabelecimento *</label>
+            <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+              {SECTOR_TEMPLATES.map((tmpl) => (
+                <button
+                  key={tmpl.id}
+                  type="button"
+                  onClick={() => setSectorId(tmpl.id)}
+                  className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2 ${
+                    sectorId === tmpl.id
+                      ? 'bg-amber-500/20 border-amber-400 text-amber-300'
+                      : 'glass-panel border-white/10 text-zinc-400 hover:border-white/20'
+                  }`}
+                >
+                  <span className="text-xl shrink-0">{tmpl.icon}</span>
+                  <span className="text-xs font-bold leading-tight">{tmpl.name.replace(' Artesanal','').replace(' Tradicional','')}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           )}
 
           <div>

@@ -6,7 +6,7 @@ import { Tenant, TenantThemeConfig, FilterTag } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { ShieldCheck, Users, DollarSign, Store, Palette, Lock, CheckCircle2, Sun, Moon, Sparkles, RefreshCw, FolderPlus, Layers, Package } from 'lucide-react';
+import { ShieldCheck, Users, DollarSign, Store, Palette, Lock, CheckCircle2, Sun, Moon, Sparkles, RefreshCw, FolderPlus, Layers, Package, Trash2, AlertTriangle } from 'lucide-react';
 import { supabase, isSupabaseConfigured, DataService } from '@/lib/supabase';
 import { SECTOR_TEMPLATES, SectorTemplate } from '@/lib/templates';
 
@@ -15,6 +15,7 @@ export const MasterDashboard: React.FC = () => {
   const [isLoadingTenants, setIsLoadingTenants] = useState<boolean>(true);
   const [selectedTenantForTheme, setSelectedTenantForTheme] = useState<Tenant | null>(null);
   const [selectedTenantForTemplate, setSelectedTenantForTemplate] = useState<Tenant | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const [themeConfig, setThemeConfig] = useState<TenantThemeConfig>({
     primary_color: '#FF5722',
@@ -70,6 +71,34 @@ export const MasterDashboard: React.FC = () => {
           .eq('id', id);
       } catch (e) {
         console.error('Failed to update status in Supabase:', e);
+      }
+    }
+  };
+
+  const handleDeleteTenant = async (id: string) => {
+    setTenants((prev) => prev.filter((t) => t.id !== id));
+    setConfirmDeleteId(null);
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('orders').delete().eq('tenant_id', id);
+        await supabase.from('restaurant_tables').delete().eq('tenant_id', id);
+        await supabase.from('analytics_events').delete().eq('tenant_id', id);
+        await supabase.from('products').delete().eq('tenant_id', id);
+        await supabase.from('categories').delete().eq('tenant_id', id);
+        await supabase.from('tenants').delete().eq('id', id);
+      } catch (e) {
+        console.error('Failed to delete tenant from Supabase:', e);
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('konnexy_user_tenant');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.id === id) localStorage.removeItem('konnexy_user_tenant');
+        } catch {}
       }
     }
   };
@@ -282,11 +311,18 @@ export const MasterDashboard: React.FC = () => {
                           <Palette className="w-3.5 h-3.5" /> Personalizar Layout
                         </button>
 
+                         <button
+                          onClick={() => setConfirmDeleteId(t.id)}
+                          className="px-3 py-1.5 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30 text-xs font-bold inline-flex items-center gap-1.5"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Excluir
+                        </button>
+
                         <button
                           onClick={() => toggleStatus(t.id, t.subscription_status)}
                           className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                             t.subscription_status === 'active'
-                              ? 'bg-rose-500/15 text-rose-400 border-rose-500/30 hover:bg-rose-500/30'
+                              ? 'bg-orange-500/15 text-orange-400 border-orange-500/30 hover:bg-orange-500/30'
                               : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30'
                           }`}
                         >
@@ -496,6 +532,41 @@ export const MasterDashboard: React.FC = () => {
             <Button variant="primary" type="button" onClick={handleSaveMasterTheme}>
               Salvar Alterações de Tema
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal 3: Confirmação de Exclusão de Tenant */}
+      <Modal
+        isOpen={!!confirmDeleteId}
+        onClose={() => setConfirmDeleteId(null)}
+        title="⚠️ Confirmar Exclusão de Restaurante"
+        maxWidth="sm"
+      >
+        <div className="space-y-5">
+          <div className="flex items-start gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30">
+            <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <div className="text-xs text-rose-300 leading-relaxed">
+              <strong className="text-rose-400 block mb-1">Ação irreversível!</strong>
+              Esta operação irá excluir permanentemente o restaurante e todos os seus dados:
+              categorias, produtos, pedidos, mesas e métricas de analytics.
+              <br /><br />
+              O cliente perderá acesso imediato ao painel e ao cardápio digital.
+            </div>
+          </div>
+          <p className="text-sm text-zinc-300 font-medium">
+            Restaurante: <strong className="text-white">{tenants.find(t => t.id === confirmDeleteId)?.name}</strong>
+          </p>
+          <div className="flex gap-3 justify-end pt-2 border-t border-white/10">
+            <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>
+              Cancelar
+            </Button>
+            <button
+              onClick={() => confirmDeleteId && handleDeleteTenant(confirmDeleteId)}
+              className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold flex items-center gap-2 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" /> Sim, Excluir Permanentemente
+            </button>
           </div>
         </div>
       </Modal>
