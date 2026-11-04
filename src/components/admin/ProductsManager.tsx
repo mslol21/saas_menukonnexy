@@ -145,7 +145,7 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
 
   return (
     <div className="space-y-6 max-w-4xl font-sans">
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="flex flex-wrap gap-4 items-center justify-between border-b border-white/10 pb-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Package className="w-5 h-5 text-amber-400" /> Cadastre & Gerencie Pratos
@@ -158,12 +158,12 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {prods.map((p) => (
           <div key={p.id} className="glass-panel p-4 rounded-3xl border border-white/10 flex gap-4 items-center justify-between">
-            <img src={p.image_url} alt={p.name} className="w-20 h-20 rounded-2xl object-cover shrink-0" />
+            <img src={p.image_url} alt={p.name} className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl object-cover shrink-0" />
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-bold text-white truncate">{p.name}</h4>
+              <h4 className="text-sm font-bold text-white break-words">{p.name}</h4>
               <p className="text-xs text-zinc-400 line-clamp-1">{p.description}</p>
               <div className="flex items-baseline gap-2 mt-1">
                 <span className="text-sm font-black text-amber-400">
@@ -173,10 +173,10 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <button onClick={() => handleOpenEdit(p)} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300">
+              <button aria-label={`Editar ${p.name}`} onClick={() => handleOpenEdit(p)} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300">
                 <Edit2 className="w-4 h-4" />
               </button>
-              <button onClick={() => handleDelete(p.id)} className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400">
+              <button aria-label={`Excluir ${p.name}`} onClick={() => handleDelete(p.id)} className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -189,8 +189,8 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Nome do Prato *</label>
-              <input
+              <label htmlFor="productsmanager-field-1" className="block text-xs font-bold text-zinc-300 mb-1">Nome do Prato *</label>
+              <input id="productsmanager-field-1"
                 type="text"
                 value={editingProd?.name || ''}
                 onChange={(e) => setEditingProd({ ...editingProd, name: e.target.value })}
@@ -199,8 +199,8 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Categoria *</label>
-              <select
+              <label htmlFor="productsmanager-field-2" className="block text-xs font-bold text-zinc-300 mb-1">Categoria *</label>
+              <select id="productsmanager-field-2"
                 value={editingProd?.category_id || ''}
                 onChange={(e) => setEditingProd({ ...editingProd, category_id: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white bg-zinc-900 border border-white/10 focus:ring-2 focus:ring-amber-500/50"
@@ -213,8 +213,8 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Descrição</label>
-            <textarea
+            <label htmlFor="productsmanager-field-3" className="block text-xs font-bold text-zinc-300 mb-1">Descrição</label>
+            <textarea id="productsmanager-field-3"
               rows={2}
               value={editingProd?.description || ''}
               onChange={(e) => setEditingProd({ ...editingProd, description: e.target.value })}
@@ -224,8 +224,8 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Preço Regular (R$) *</label>
-              <input
+              <label htmlFor="productsmanager-field-4" className="block text-xs font-bold text-zinc-300 mb-1">Preço Regular (R$) *</label>
+              <input id="productsmanager-field-4"
                 type="number"
                 step="0.01"
                 value={editingProd?.price || 0}
@@ -235,8 +235,8 @@ export const ProductsManager: React.FC<ProductsManagerProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Preço Promocional (Opcional)</label>
-              <input
+              <label htmlFor="productsmanager-field-5" className="block text-xs font-bold text-zinc-300 mb-1">Preço Promocional (Opcional)</label>
+              <input id="productsmanager-field-5"
                 type="number"
                 step="0.01"
                 value={editingProd?.promo_price || ''}

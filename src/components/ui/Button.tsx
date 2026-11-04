@@ -21,7 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const base = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500/50 disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]';
+  const base = 'min-h-11 inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]';
 
   const sizes = {
     sm: 'px-3 py-1.5 text-xs font-semibold gap-1.5',
@@ -30,10 +30,10 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const variants = {
-    primary: 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg shadow-orange-500/20 border border-orange-400/30',
+    primary: 'brand-primary bg-cyan-400 hover:bg-cyan-300 text-slate-950 shadow-lg shadow-cyan-500/15 border border-cyan-300/40',
     secondary: 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700',
     glass: 'glass-panel hover:bg-white/10 text-white shadow-md border border-white/10',
-    outline: 'bg-transparent border border-zinc-700 hover:border-zinc-500 text-zinc-200 hover:text-white',
+    outline: 'brand-outline bg-transparent border border-zinc-700 hover:border-zinc-500 text-zinc-200 hover:text-white',
     ghost: 'bg-transparent hover:bg-white/5 text-zinc-300 hover:text-white',
     danger: 'bg-gradient-to-r from-rose-600 to-red-600 text-white hover:from-rose-700 hover:to-red-700 shadow-lg shadow-rose-600/20',
     success: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-600/20',
@@ -42,6 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={clsx(base, sizes[size], variants[variant], className)}
+      aria-busy={isLoading || undefined}
       disabled={disabled || isLoading}
       {...props}
     >

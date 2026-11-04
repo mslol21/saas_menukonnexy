@@ -562,15 +562,17 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
 
                       <div className="flex items-center gap-2">
                         <button
+                          aria-label={`Remover uma unidade de ${product.name}`}
                           onClick={() => updateQuantity(product.id, quantity - 1)}
-                          className="w-6 h-6 rounded-lg bg-zinc-800 text-white flex items-center justify-center text-xs font-bold"
+                          className="w-11 h-11 rounded-lg bg-zinc-800 text-white flex items-center justify-center text-xs font-bold"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className="text-xs font-bold text-white w-4 text-center">{quantity}</span>
                         <button
+                          aria-label={`Adicionar uma unidade de ${product.name}`}
                           onClick={() => updateQuantity(product.id, quantity + 1)}
-                          className="w-6 h-6 rounded-lg bg-amber-500 text-zinc-950 flex items-center justify-center text-xs font-bold"
+                          className="w-11 h-11 rounded-lg bg-amber-500 text-zinc-950 flex items-center justify-center text-xs font-bold"
                         >
                           <Plus className="w-3 h-3" />
                         </button>

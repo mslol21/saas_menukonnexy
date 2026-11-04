@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Category, Product } from '@/types';
@@ -48,7 +49,7 @@ export default function TenantAdminPage() {
     }
   };
 
-  if (isLoading || !userTenant) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-6 font-sans">
         <div className="animate-pulse text-center space-y-3">
@@ -61,14 +62,16 @@ export default function TenantAdminPage() {
     );
   }
 
+  if (!userTenant) return <div className="konnexy-platform min-h-screen flex items-center justify-center p-6"><div className="glass-panel p-8 rounded-3xl max-w-md text-center"><h1 className="text-2xl font-bold">Acesse seu restaurante</h1><p className="k-muted my-4">Entre na sua conta para carregar o cardápio e gerenciar os pedidos.</p><Link href="/login" className="k-link k-link-primary">Ir para o login</Link></div></div>;
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-amber-500 selection:text-zinc-950 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
+    <div className="konnexy-platform min-h-screen bg-zinc-950 text-white font-sans selection:bg-amber-500 selection:text-zinc-950 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-5 items-start">
         {/* Navigation Sidebar */}
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} tenantSlug={userTenant.slug} />
 
         {/* Content Area (Scoped strictly to logged in user tenant) */}
-        <main className="flex-1 w-full glass-panel p-6 sm:p-8 rounded-3xl border border-white/10 min-h-[calc(100vh-80px)]">
+        <main className="admin-main flex-1 w-full glass-panel p-4 sm:p-6 rounded-3xl border border-white/10 min-h-[60vh]">
           {activeTab === 'dashboard' && <OverviewMetrics tenantId={userTenant.id} />}
           {activeTab === 'kitchen' && <KitchenMonitor tenantId={userTenant.id} />}
           {activeTab === 'coupons' && <CouponsManager tenantId={userTenant.id} />}

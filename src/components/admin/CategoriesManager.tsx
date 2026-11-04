@@ -67,7 +67,7 @@ export const CategoriesManager: React.FC<CategoriesManagerProps> = ({
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="flex flex-wrap gap-4 items-center justify-between border-b border-white/10 pb-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Layers className="w-5 h-5 text-orange-400" /> Gerenciador de Categorias
@@ -80,8 +80,8 @@ export const CategoriesManager: React.FC<CategoriesManagerProps> = ({
         </Button>
       </div>
 
-      <div className="glass-panel rounded-3xl border border-white/10 overflow-hidden">
-        <table className="w-full text-left text-sm text-zinc-300">
+      <div className="glass-panel rounded-3xl border border-white/10 overflow-x-auto">
+        <table className="min-w-[560px] w-full text-left text-sm text-zinc-300">
           <thead className="bg-white/5 border-b border-white/10 text-xs uppercase font-bold text-zinc-400">
             <tr>
               <th className="p-4">Ordem</th>
@@ -103,10 +103,10 @@ export const CategoriesManager: React.FC<CategoriesManagerProps> = ({
                   </span>
                 </td>
                 <td className="p-4 text-right space-x-2">
-                  <button onClick={() => handleOpenEdit(c)} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300">
+                  <button aria-label={`Editar ${c.name}`} onClick={() => handleOpenEdit(c)} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(c.id)} className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400">
+                  <button aria-label={`Excluir ${c.name}`} onClick={() => handleDelete(c.id)} className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </td>
@@ -120,8 +120,8 @@ export const CategoriesManager: React.FC<CategoriesManagerProps> = ({
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingCat?.id ? 'Editar Categoria' : 'Nova Categoria'}>
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Nome da Categoria *</label>
-            <input
+            <label htmlFor="categoriesmanager-field-1" className="block text-xs font-bold text-zinc-300 mb-1">Nome da Categoria *</label>
+            <input id="categoriesmanager-field-1"
               type="text"
               value={editingCat?.name || ''}
               onChange={(e) => setEditingCat({ ...editingCat, name: e.target.value })}
@@ -132,8 +132,8 @@ export const CategoriesManager: React.FC<CategoriesManagerProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Ordem de Exibição</label>
-            <input
+            <label htmlFor="categoriesmanager-field-2" className="block text-xs font-bold text-zinc-300 mb-1">Ordem de Exibição</label>
+            <input id="categoriesmanager-field-2"
               type="number"
               value={editingCat?.sort_order || 1}
               onChange={(e) => setEditingCat({ ...editingCat, sort_order: parseInt(e.target.value) })}

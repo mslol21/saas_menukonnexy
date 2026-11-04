@@ -12,9 +12,10 @@ import { Footer } from '@/components/landing/Footer';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white relative font-sans selection:bg-orange-500 selection:text-white">
+    <div className="konnexy-platform landing-page min-h-screen bg-zinc-950 text-white relative font-sans selection:bg-orange-500 selection:text-white">
       <Navbar />
-      <main>
+      <a href="#conteudo" className="skip-link">Pular para o conteúdo</a>
+      <main id="conteudo">
         <Hero />
         <DemoPreview />
         <Features />

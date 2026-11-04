@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { DataService } from '@/lib/supabase';
 import { Tenant, Category, Product, FilterTag } from '@/types';
@@ -26,6 +27,8 @@ export default function PublicMenuPage() {
 
   const { setTableNumber } = useCart();
 
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -46,12 +49,18 @@ export default function PublicMenuPage() {
   }, [mesaQuery, setTableNumber]);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadData() {
+      setLoading(true);
+      setLoadError(false);
+      try {
       const t = await DataService.getTenantBySlug(slug);
+      if (cancelled) return;
       setTenant(t);
       if (t) {
         const cats = await DataService.getPublicCategoriesBySlug(slug);
         const prods = await DataService.getPublicProductsBySlug(slug);
+        if (cancelled) return;
         setCategories(cats);
         setProducts(prods);
 
@@ -68,11 +77,16 @@ export default function PublicMenuPage() {
           }),
         }).catch((e) => console.warn('Analytics API error:', e));
       }
+      } catch { if (!cancelled) setLoadError(true); }
+      finally { if (!cancelled) setLoading(false); }
     }
     loadData();
+    return () => { cancelled = true; };
   }, [slug]);
 
-  if (!tenant) {
+  if (!loading && (!tenant || loadError)) return <div className="min-h-screen bg-zinc-950 text-white grid place-items-center p-6"><div className="max-w-md text-center"><h1 className="text-2xl font-bold">{loadError ? "Não foi possível carregar o cardápio" : "Cardápio não encontrado"}</h1><p className="text-zinc-400 mt-3">Confira o link ou tente novamente em instantes.</p><button onClick={()=>window.location.reload()} className="k-link k-link-primary mt-6">Tentar novamente</button></div></div>;
+
+  if (loading || !tenant) {
     return (
       <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-6">
         <div className="animate-pulse text-center">
@@ -215,9 +229,9 @@ export default function PublicMenuPage() {
       />
 
       {/* Products Grid */}
-      <main className="max-w-4xl mx-auto px-4 space-y-4">
+      <main className="max-w-[1240px] mx-auto px-5 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
         {filteredProducts.length === 0 ? (
-          <div className={`text-center py-16 rounded-3xl border p-8 ${
+          <div className={`col-span-full text-center py-16 rounded-3xl border p-8 ${
             isLight ? 'bg-white border-zinc-200 text-zinc-900 shadow-sm' : 'glass-panel border-white/10 text-white'
           }`}>
             <AlertCircle className="w-12 h-12 text-zinc-400 mx-auto mb-3" />
@@ -225,6 +239,7 @@ export default function PublicMenuPage() {
             <p className={`text-xs mt-1 ${isLight ? 'text-zinc-500' : 'text-zinc-400'}`}>
               Tente alterar os termos da busca ou remover os filtros aplicados.
             </p>
+            <button className="k-link k-link-secondary mt-4" onClick={()=>{setSearchQuery('');setSelectedFilters([]);setActiveCategoryId('all');}}>Limpar filtros</button>
           </div>
         ) : (
           filteredProducts.map((prod) => (
@@ -280,8 +295,9 @@ export default function PublicMenuPage() {
         onClose={() => setIsPrivacyModalOpen(false)}
       />
 
+      <p className="text-center text-xs mt-8"><Link href="/" className="inline-flex min-h-11 items-center">Um produto Konnexy · Konnexy Menu</Link></p>
       {/* LGPD Footer Link */}
-      <div style={{ textAlign: 'center', padding: '1rem 0 2rem', opacity: 0.5 }}>
+      <div style={{ textAlign: 'center', padding: '1rem 0 2rem', opacity: 0.85 }}>
         <button
           onClick={() => setIsPrivacyModalOpen(true)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.7rem', color: 'inherit' }}

@@ -41,7 +41,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div
+    <article
       onClick={() => onSelectProduct(product)}
       className={`rounded-3xl p-4 border transition-all duration-300 cursor-pointer group flex flex-col sm:flex-row gap-4 relative overflow-hidden ${
         isLight
@@ -52,9 +52,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Product Image & Badges */}
       <div className="relative w-full sm:w-40 h-44 sm:h-40 rounded-2xl overflow-hidden bg-zinc-900 shrink-0">
         <img
+          loading="lazy"
+          width={320}
+          height={240}
           src={product.image_url}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
         />
 
         {/* Top Floating Badges */}
@@ -78,12 +81,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* Product Info */}
-      <div className="flex-1 flex flex-col justify-between">
+      <div className="flex-1 min-w-0 flex flex-col justify-between">
         <div>
           {/* Title */}
           <div className="flex items-start justify-between gap-2">
             <h3 className={`text-base font-bold transition-colors leading-tight ${isLight ? 'text-zinc-900 group-hover:text-emerald-600' : 'text-white group-hover:text-amber-400'}`}>
-              {product.name}
+              <button type="button" className="text-left py-2" onClick={e=>{e.stopPropagation();onSelectProduct(product);}} aria-label={`Ver detalhes de ${product.name}`}>{product.name}</button>
             </h3>
           </div>
 
@@ -123,8 +126,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Price & Fast Quantity Counter Controls */}
-        <div className={`flex items-center justify-between pt-3 mt-3 border-t ${isLight ? 'border-zinc-200' : 'border-white/5'}`}>
-          <div className="flex items-baseline gap-2">
+        <div className={`flex flex-wrap gap-3 items-center justify-between pt-3 mt-3 border-t ${isLight ? 'border-zinc-200' : 'border-white/5'}`}>
+          <div className="flex flex-wrap items-baseline gap-2">
             <span className={`text-lg font-extrabold ${isLight ? 'text-zinc-900' : 'text-white'}`}>
               R$ {product.promo_price ? product.promo_price.toFixed(2) : product.price.toFixed(2)}
             </span>
@@ -140,8 +143,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div className={`flex items-center gap-2 p-1 rounded-xl border ${isLight ? 'bg-zinc-100 border-zinc-200' : 'bg-white/10 border-white/20'}`}>
               <button
                 type="button"
+                aria-label={`Remover uma unidade de ${product.name}`}
                 onClick={handleDecrement}
-                className="w-7 h-7 rounded-lg bg-zinc-900 text-white flex items-center justify-center hover:bg-zinc-800 transition-colors font-bold text-xs active:scale-95"
+                className="w-11 h-11 rounded-lg bg-zinc-900 text-white flex items-center justify-center hover:bg-zinc-800 transition-colors font-bold text-xs active:scale-95"
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
@@ -150,18 +154,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               </span>
               <button
                 type="button"
+                aria-label={`Adicionar uma unidade de ${product.name}`}
                 onClick={handleIncrement}
                 style={{ backgroundColor: primaryColor }}
-                className="w-7 h-7 rounded-lg text-white flex items-center justify-center transition-colors font-bold text-xs active:scale-95"
+                className="w-11 h-11 rounded-lg text-white flex items-center justify-center transition-colors font-bold text-xs active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
           ) : (
             <button
+              aria-label={`Adicionar ${product.name}`}
               onClick={handleQuickAdd}
               style={{ backgroundColor: primaryColor }}
-              className="px-3.5 py-2 rounded-xl text-white font-extrabold text-xs flex items-center gap-1.5 active:scale-95 shadow-md hover:brightness-110 transition-all"
+              className="min-h-11 px-3.5 py-2 rounded-xl text-white font-extrabold text-xs flex items-center gap-1.5 active:scale-95 shadow-md hover:brightness-110 transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>Adicionar</span>
@@ -169,6 +175,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };

@@ -153,20 +153,20 @@ export const OverviewMetrics: React.FC<OverviewMetricsProps> = ({ tenantId = 'de
           <span className="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
             <Sparkles className="w-4 h-4" /> Gestão Financeira & Desempenho
           </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-white">Painel de Vendas em Tempo Real</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-white">Visão geral do restaurante</h2>
           <p className="text-sm text-zinc-300 mt-1 max-w-xl">
             Acompanhe o faturamento bruto, tíquete médio, pedidos realizados e acessos ao seu cardápio em tempo real.
           </p>
         </div>
 
         <div className="px-4 py-2 rounded-2xl glass-panel border border-amber-500/30 text-amber-400 font-extrabold text-xs flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-          Sincronizado ao Vivo
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 " />
+          Visão da operação
         </div>
       </div>
 
       {/* Main Financial Indicators (4 Metric Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {/* Total Revenue */}
         <div className="glass-panel p-6 rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-zinc-900/80 flex flex-col justify-between shadow-xl">
           <div className="flex items-center justify-between mb-4">

@@ -183,8 +183,8 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
         </p>
 
         <div>
-          <label className="block text-xs font-semibold text-zinc-300 mb-1">Texto da Promoção / Anúncio</label>
-          <input
+          <label htmlFor="restaurantprofileform-field-1" className="block text-xs font-semibold text-zinc-300 mb-1">Texto da Promoção / Anúncio</label>
+          <input id="restaurantprofileform-field-1"
             type="text"
             value={formData.promo_banner_text || ''}
             onChange={(e) => setFormData({ ...formData, promo_banner_text: e.target.value })}
@@ -202,8 +202,8 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">Nome do Estabelecimento *</label>
-            <input
+            <label htmlFor="restaurantprofileform-field-2" className="block text-xs font-semibold text-zinc-300 mb-1">Nome do Estabelecimento *</label>
+            <input id="restaurantprofileform-field-2"
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -213,8 +213,8 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">URL amigável (Slug ex: menu.com/slug) *</label>
-            <input
+            <label htmlFor="restaurantprofileform-field-3" className="block text-xs font-semibold text-zinc-300 mb-1">URL amigável (Slug ex: menu.com/slug) *</label>
+            <input id="restaurantprofileform-field-3"
               type="text"
               value={formData.slug}
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
@@ -225,8 +225,8 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-zinc-300 mb-1">Descrição / Biografia</label>
-          <textarea
+          <label htmlFor="restaurantprofileform-field-4" className="block text-xs font-semibold text-zinc-300 mb-1">Descrição / Biografia</label>
+          <textarea id="restaurantprofileform-field-4"
             rows={3}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -314,9 +314,9 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
         {/* CEP Input & Search Button */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold text-amber-400 mb-1">CEP do Estabelecimento *</label>
+            <label htmlFor="restaurantprofileform-field-5" className="block text-xs font-bold text-amber-400 mb-1">CEP do Estabelecimento *</label>
             <div className="flex gap-2">
-              <input
+              <input id="restaurantprofileform-field-5"
                 type="text"
                 value={cepInput}
                 onChange={(e) => setCepInput(e.target.value)}
@@ -337,8 +337,8 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">Número do Imóvel</label>
-            <input
+            <label htmlFor="restaurantprofileform-field-6" className="block text-xs font-semibold text-zinc-300 mb-1">Número do Imóvel</label>
+            <input id="restaurantprofileform-field-6"
               type="text"
               value={numberInput}
               onChange={(e) => handleNumberChange(e.target.value)}
@@ -350,8 +350,8 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
 
         {/* Address Generated Field */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-300 mb-1">Endereço Completo Gerado (Sem erros de digitação)</label>
-          <input
+          <label htmlFor="restaurantprofileform-field-7" className="block text-xs font-semibold text-zinc-300 mb-1">Endereço Completo Gerado (Sem erros de digitação)</label>
+          <input id="restaurantprofileform-field-7"
             type="text"
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -368,8 +368,8 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">Número do WhatsApp (Com DDD) *</label>
-            <input
+            <label htmlFor="restaurantprofileform-field-8" className="block text-xs font-semibold text-zinc-300 mb-1">Número do WhatsApp (Com DDD) *</label>
+            <input id="restaurantprofileform-field-8"
               type="text"
               value={formData.whatsapp}
               onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
@@ -379,8 +379,8 @@ export const RestaurantProfileForm: React.FC<RestaurantProfileFormProps> = ({ te
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">Instagram (@seuusuario)</label>
-            <input
+            <label htmlFor="restaurantprofileform-field-9" className="block text-xs font-semibold text-zinc-300 mb-1">Instagram (@seuusuario)</label>
+            <input id="restaurantprofileform-field-9"
               type="text"
               value={formData.instagram || ''}
               onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}

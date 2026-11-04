@@ -508,8 +508,8 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Configuração da Placa</h3>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Título da Placa</label>
-              <input
+              <label htmlFor="qrcodestudio-field-1" className="block text-xs font-bold text-zinc-300 mb-1">Título da Placa</label>
+              <input id="qrcodestudio-field-1"
                 type="text"
                 value={customTitle}
                 onChange={(e) => setCustomTitle(e.target.value)}
@@ -518,8 +518,8 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Número da Mesa</label>
-              <input
+              <label htmlFor="qrcodestudio-field-2" className="block text-xs font-bold text-zinc-300 mb-1">Número da Mesa</label>
+              <input id="qrcodestudio-field-2"
                 type="text"
                 value={customTableNumber}
                 onChange={(e) => setCustomTableNumber(e.target.value)}
@@ -563,8 +563,8 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={editingTable?.id ? 'Editar Mesa' : 'Nova Mesa'} maxWidth="md">
         <form onSubmit={handleSaveTable} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Número / Código da Mesa *</label>
-            <input
+            <label htmlFor="qrcodestudio-field-3" className="block text-xs font-bold text-zinc-300 mb-1">Número / Código da Mesa *</label>
+            <input id="qrcodestudio-field-3"
               type="text"
               value={editingTable?.number || ''}
               onChange={(e) => setEditingTable({ ...editingTable, number: e.target.value })}
@@ -575,8 +575,8 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Identificação / Setor</label>
-            <input
+            <label htmlFor="qrcodestudio-field-4" className="block text-xs font-bold text-zinc-300 mb-1">Identificação / Setor</label>
+            <input id="qrcodestudio-field-4"
               type="text"
               value={editingTable?.name || ''}
               onChange={(e) => setEditingTable({ ...editingTable, name: e.target.value })}
@@ -586,8 +586,8 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Capacidade (Número de Lugares)</label>
-            <input
+            <label htmlFor="qrcodestudio-field-5" className="block text-xs font-bold text-zinc-300 mb-1">Capacidade (Número de Lugares)</label>
+            <input id="qrcodestudio-field-5"
               type="number"
               value={editingTable?.capacity || 4}
               onChange={(e) => setEditingTable({ ...editingTable, capacity: parseInt(e.target.value) || 4 })}
@@ -610,8 +610,8 @@ export const QRCodeStudio: React.FC<QRCodeStudioProps> = ({
           </p>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Quantidade de Novas Mesas</label>
-            <input
+            <label htmlFor="qrcodestudio-field-6" className="block text-xs font-bold text-zinc-300 mb-1">Quantidade de Novas Mesas</label>
+            <input id="qrcodestudio-field-6"
               type="number"
               value={batchCount}
               onChange={(e) => setBatchCount(parseInt(e.target.value) || 1)}

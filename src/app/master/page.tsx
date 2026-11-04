@@ -50,9 +50,9 @@ export default function MasterPage() {
 
   if (!isUnlocked) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4 relative font-sans selection:bg-amber-500 selection:text-white">
+      <div className="konnexy-platform min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4 relative font-sans selection:bg-amber-500 selection:text-white">
         {/* Background Ambient Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-amber-500/10 via-cyan-500/10 to-transparent blur-[140px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(550px,90vw)] h-[min(550px,90vw)] bg-gradient-to-tr from-amber-500/10 via-cyan-500/10 to-transparent blur-[140px] rounded-full pointer-events-none" />
 
         <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-amber-500/30 shadow-2xl relative z-10">
           <div className="text-center mb-8">
@@ -79,10 +79,10 @@ export default function MasterPage() {
 
           <form onSubmit={handleMasterUnlock} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">E-mail Master *</label>
+              <label htmlFor="page-field-1" className="block text-xs font-bold text-zinc-300 mb-1">E-mail Master *</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                <input
+                <input id="page-field-1"
                   type="email"
                   value={masterEmail}
                   onChange={(e) => setMasterEmail(e.target.value)}
@@ -94,10 +94,10 @@ export default function MasterPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Senha de Segurança Master *</label>
+              <label htmlFor="page-field-2" className="block text-xs font-bold text-zinc-300 mb-1">Senha de Segurança Master *</label>
               <div className="relative">
                 <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                <input
+                <input id="page-field-2"
                   type="password"
                   value={masterPass}
                   onChange={(e) => setMasterPass(e.target.value)}
