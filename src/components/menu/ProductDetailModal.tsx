@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { Product } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -23,6 +23,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
   const [selectedImg, setSelectedImg] = useState<string>('');
+  const notesId = useId();
+
+  useEffect(() => {
+    setQuantity(1);
+    setNotes('');
+    setSelectedImg('');
+  }, [product?.id, isOpen]);
 
   if (!product) return null;
 
@@ -57,6 +64,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             {galleryList.map((img, idx) => (
               <button
                 key={idx}
+                aria-label={`Ver foto ${idx + 1} de ${product.name}`}
+                aria-pressed={mainImage === img}
                 onClick={() => setSelectedImg(img)}
                 className={`w-14 h-14 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
                   mainImage === img ? 'border-orange-500 scale-105' : 'border-zinc-800 opacity-60'
@@ -140,10 +149,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
         {/* Special Instructions Note */}
         <div>
-          <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+          <label htmlFor={notesId} className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5 flex items-center gap-1">
             <MessageSquare className="w-3.5 h-3.5 text-orange-400" /> Observações do Pedido
           </label>
           <input
+            id={notesId}
             type="text"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -153,18 +163,21 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         </div>
 
         {/* Quantity Controls & Add Button */}
-        <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-4">
+        <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3 glass-panel p-1.5 rounded-2xl border border-white/10">
             <button
+              aria-label="Diminuir quantidade"
+              disabled={quantity === 1}
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-8 h-8 rounded-xl bg-zinc-800 text-white flex items-center justify-center hover:bg-zinc-700 active:scale-95"
+              className="w-11 h-11 rounded-xl bg-zinc-800 text-white flex items-center justify-center hover:bg-zinc-700 active:scale-95 disabled:opacity-40"
             >
               <Minus className="w-4 h-4" />
             </button>
             <span className="text-base font-extrabold text-white w-6 text-center">{quantity}</span>
             <button
+              aria-label="Aumentar quantidade"
               onClick={() => setQuantity(quantity + 1)}
-              className="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center hover:bg-orange-600 active:scale-95"
+              className="w-11 h-11 rounded-xl bg-orange-500 text-white flex items-center justify-center hover:bg-orange-600 active:scale-95"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -174,10 +187,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             variant="primary"
             size="lg"
             onClick={handleAddToCart}
-            className="flex-1 justify-between text-base"
+            className="flex-1 text-base"
           >
-            <span>Adicionar ao Pedido</span>
-            <span className="font-black">R$ {totalPrice.toFixed(2)}</span>
+            Adicionar · R$ {totalPrice.toFixed(2).replace('.', ',')}
           </Button>
         </div>
       </div>

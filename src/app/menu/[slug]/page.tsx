@@ -52,7 +52,6 @@ export default function PublicMenuPage() {
     let cancelled = false;
     // A stalled connection must not leave the customer behind an endless loader.
     const timeout = window.setTimeout(() => {
-      cancelled = true;
       setLoadError(true);
       setLoading(false);
     }, 15000);
@@ -85,6 +84,7 @@ export default function PublicMenuPage() {
           }),
         }).catch((e) => console.warn('Analytics API error:', e));
       }
+      if (!cancelled) setLoadError(false);
       } catch { if (!cancelled) setLoadError(true); }
       finally { window.clearTimeout(timeout); if (!cancelled) setLoading(false); }
     }
