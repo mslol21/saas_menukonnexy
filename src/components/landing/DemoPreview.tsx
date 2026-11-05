@@ -9,7 +9,7 @@ export function MenuPreview() {
  const products=MOCK_PRODUCTS.filter(p=>p.tenant_id==='t-1' && (category==='all'||(category==='sides'?p.category_id==='c-3':['c-1','c-2'].includes(p.category_id)))).slice(0,2);
  return <div className="k-demo-panel" aria-label="Prévia do cardápio de exemplo">
   <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-4"><span className="text-xs k-muted">VISÃO DO CLIENTE</span><span className="text-xs text-cyan-400">Demonstração</span></div>
-  <div className="flex items-center gap-3 mt-5"><img src="/konnexy-logo.jpg" alt="" width={48} height={48} className="rounded-xl"/><div><p className="text-lg font-bold">Calixto Burger & Grill</p><p className="text-xs k-muted">Cardápio de exemplo · Konnexy Menu</p></div></div>
+  <div className="flex items-center gap-3 mt-5"><img src="/konnexy-logo.jpg" alt="" width={48} height={48} className="w-12 h-12 object-cover rounded-xl shrink-0"/><div><p className="text-lg font-bold">Calixto Burger & Grill</p><p className="text-xs k-muted">Cardápio de exemplo · Konnexy Menu</p></div></div>
   <div className="k-demo-tabs" aria-label="Categorias da prévia">{filters.map(f=><button key={f.id} onClick={()=>setCategory(f.id)} aria-pressed={category===f.id}>{f.name}</button>)}</div>
   <div className="space-y-3 min-h-[224px]">{products.map(item=><Link href="/menu/calixto-burger" key={item.id} className="flex items-center gap-3 rounded-2xl p-3 border border-white/10 hover:border-cyan-400/50 transition-colors">
    <img src={item.image_url} alt={item.name} width={80} height={80} loading="lazy" className="w-20 h-20 rounded-xl object-cover shrink-0"/>

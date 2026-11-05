@@ -50,6 +50,12 @@ export default function PublicMenuPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // A stalled connection must not leave the customer behind an endless loader.
+    const timeout = window.setTimeout(() => {
+      cancelled = true;
+      setLoadError(true);
+      setLoading(false);
+    }, 15000);
     async function loadData() {
       setLoading(true);
       setLoadError(false);
@@ -58,8 +64,10 @@ export default function PublicMenuPage() {
       if (cancelled) return;
       setTenant(t);
       if (t) {
-        const cats = await DataService.getPublicCategoriesBySlug(slug);
-        const prods = await DataService.getPublicProductsBySlug(slug);
+        const [cats, prods] = await Promise.all([
+          DataService.getPublicCategoriesBySlug(slug),
+          DataService.getPublicProductsBySlug(slug),
+        ]);
         if (cancelled) return;
         setCategories(cats);
         setProducts(prods);
@@ -78,10 +86,10 @@ export default function PublicMenuPage() {
         }).catch((e) => console.warn('Analytics API error:', e));
       }
       } catch { if (!cancelled) setLoadError(true); }
-      finally { if (!cancelled) setLoading(false); }
+      finally { window.clearTimeout(timeout); if (!cancelled) setLoading(false); }
     }
     loadData();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; window.clearTimeout(timeout); };
   }, [slug]);
 
   if (!loading && (!tenant || loadError)) return <div className="min-h-screen bg-zinc-950 text-white grid place-items-center p-6"><div className="max-w-md text-center"><h1 className="text-2xl font-bold">{loadError ? "Não foi possível carregar o cardápio" : "Cardápio não encontrado"}</h1><p className="text-zinc-400 mt-3">Confira o link ou tente novamente em instantes.</p><button onClick={()=>window.location.reload()} className="k-link k-link-primary mt-6">Tentar novamente</button></div></div>;
