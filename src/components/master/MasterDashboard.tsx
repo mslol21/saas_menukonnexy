@@ -186,7 +186,7 @@ export const MasterDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white p-6 sm:p-10 font-sans">
+    <div className="konnexy-platform min-h-screen bg-zinc-950 text-white p-5 pt-24 sm:p-8 sm:pt-24 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-6 flex-wrap gap-4">

@@ -289,8 +289,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">CEP de Origem (Endereço da Loja) *</label>
-                  <input
+                  <label htmlFor="couponsmanager-field-1" className="block text-xs font-semibold text-zinc-300 mb-1">CEP de Origem (Endereço da Loja) *</label>
+                  <input id="couponsmanager-field-1"
                     type="text"
                     value={distanceConfig.store_cep}
                     onChange={(e) => {
@@ -304,8 +304,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">Taxa Base Inicial (R$) *</label>
-                  <input
+                  <label htmlFor="couponsmanager-field-2" className="block text-xs font-semibold text-zinc-300 mb-1">Taxa Base Inicial (R$) *</label>
+                  <input id="couponsmanager-field-2"
                     type="number"
                     step="0.01"
                     value={distanceConfig.base_fee}
@@ -319,8 +319,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">Raio Base Incluso (km) *</label>
-                  <input
+                  <label htmlFor="couponsmanager-field-3" className="block text-xs font-semibold text-zinc-300 mb-1">Raio Base Incluso (km) *</label>
+                  <input id="couponsmanager-field-3"
                     type="number"
                     step="0.1"
                     value={distanceConfig.base_distance_km}
@@ -334,8 +334,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">Valor por km Adicional (R$/km) *</label>
-                  <input
+                  <label htmlFor="couponsmanager-field-4" className="block text-xs font-semibold text-zinc-300 mb-1">Valor por km Adicional (R$/km) *</label>
+                  <input id="couponsmanager-field-4"
                     type="number"
                     step="0.50"
                     value={distanceConfig.price_per_km}
@@ -349,8 +349,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">Distância Máxima de Entrega (km)</label>
-                  <input
+                  <label htmlFor="couponsmanager-field-5" className="block text-xs font-semibold text-zinc-300 mb-1">Distância Máxima de Entrega (km)</label>
+                  <input id="couponsmanager-field-5"
                     type="number"
                     step="1"
                     value={distanceConfig.max_distance_km}
@@ -447,8 +447,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
       <Modal isOpen={isCouponModalOpen} onClose={() => setIsCouponModalOpen(false)} title={editingCoupon?.id ? 'Editar Cupom' : 'Novo Cupom de Desconto'} maxWidth="md">
         <form onSubmit={handleSaveCoupon} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Código do Cupom (Ex: BEMVINDO10) *</label>
-            <input
+            <label htmlFor="couponsmanager-field-6" className="block text-xs font-bold text-zinc-300 mb-1">Código do Cupom (Ex: BEMVINDO10) *</label>
+            <input id="couponsmanager-field-6"
               type="text"
               value={editingCoupon?.code || ''}
               onChange={(e) => setEditingCoupon({ ...editingCoupon, code: e.target.value.toUpperCase() })}
@@ -460,8 +460,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Tipo de Desconto</label>
-              <select
+              <label htmlFor="couponsmanager-field-7" className="block text-xs font-bold text-zinc-300 mb-1">Tipo de Desconto</label>
+              <select id="couponsmanager-field-7"
                 value={editingCoupon?.discount_type || 'percent'}
                 onChange={(e) => setEditingCoupon({ ...editingCoupon, discount_type: e.target.value as any })}
                 className="w-full px-3 py-2 rounded-xl glass-panel text-sm text-white bg-zinc-900 border border-white/10"
@@ -472,8 +472,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Valor do Desconto *</label>
-              <input
+              <label htmlFor="couponsmanager-field-8" className="block text-xs font-bold text-zinc-300 mb-1">Valor do Desconto *</label>
+              <input id="couponsmanager-field-8"
                 type="number"
                 step="0.01"
                 value={editingCoupon?.discount_value || 10}
@@ -485,8 +485,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Valor Mínimo do Pedido (R$)</label>
-            <input
+            <label htmlFor="couponsmanager-field-9" className="block text-xs font-bold text-zinc-300 mb-1">Valor Mínimo do Pedido (R$)</label>
+            <input id="couponsmanager-field-9"
               type="number"
               step="0.01"
               value={editingCoupon?.min_order_amount || 0}
@@ -506,8 +506,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
       <Modal isOpen={isZoneModalOpen} onClose={() => setIsZoneModalOpen(false)} title={editingZone?.id ? 'Editar Região' : 'Nova Região de Entrega'} maxWidth="md">
         <form onSubmit={handleSaveZone} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1">Nome do Bairro / Região *</label>
-            <input
+            <label htmlFor="couponsmanager-field-10" className="block text-xs font-bold text-zinc-300 mb-1">Nome do Bairro / Região *</label>
+            <input id="couponsmanager-field-10"
               type="text"
               value={editingZone?.name || ''}
               onChange={(e) => setEditingZone({ ...editingZone, name: e.target.value })}
@@ -519,8 +519,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Taxa de Entrega (R$) *</label>
-              <input
+              <label htmlFor="couponsmanager-field-11" className="block text-xs font-bold text-zinc-300 mb-1">Taxa de Entrega (R$) *</label>
+              <input id="couponsmanager-field-11"
                 type="number"
                 step="0.01"
                 value={editingZone?.fee || 5.00}
@@ -531,8 +531,8 @@ export const CouponsManager: React.FC<CouponsManagerProps> = ({ tenantId }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1">Tempo Estimado</label>
-              <input
+              <label htmlFor="couponsmanager-field-12" className="block text-xs font-bold text-zinc-300 mb-1">Tempo Estimado</label>
+              <input id="couponsmanager-field-12"
                 type="text"
                 value={editingZone?.estimated_time || ''}
                 onChange={(e) => setEditingZone({ ...editingZone, estimated_time: e.target.value })}

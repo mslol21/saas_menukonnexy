@@ -7,13 +7,13 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Cardápio digital para restaurantes, bares e cafeterias.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#09090b',
-    theme_color: '#FF5722',
+    background_color: '#050711',
+    theme_color: '#22d3ee',
     icons: [
       {
-        src: '/favicon.ico',
-        sizes: 'any',
-        type: 'image/x-icon',
+        src: '/konnexy-logo.jpg',
+        sizes: '1024x558',
+        type: 'image/jpeg',
       },
     ],
   };

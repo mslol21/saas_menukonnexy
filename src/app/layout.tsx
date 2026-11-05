@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { MotionProvider } from '@/components/ui/MotionProvider';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/context/AuthContext';
@@ -7,9 +8,7 @@ import { AuthProvider } from '@/context/AuthContext';
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: '#FF5722',
+  themeColor: '#050711',
 };
 
 export const metadata: Metadata = {
@@ -18,6 +17,7 @@ export const metadata: Metadata = {
   keywords: ['cardapio digital', 'restaurante saas', 'qr code mesa', 'pedido whatsapp', 'menu online', 'konnexy menu'],
   authors: [{ name: 'Konnexy Tech Team' }],
   manifest: '/manifest.webmanifest',
+  icons: { icon: '/konnexy-logo.jpg', apple: '/konnexy-logo.jpg' },
 };
 
 export default function RootLayout({
@@ -28,13 +28,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className="antialiased selection:bg-orange-500 selection:text-white">
-        <AuthProvider>
+        <MotionProvider><AuthProvider>
           <ThemeProvider>
             <CartProvider>
               {children}
             </CartProvider>
           </ThemeProvider>
-        </AuthProvider>
+        </AuthProvider></MotionProvider>
       </body>
     </html>
   );

@@ -18,7 +18,7 @@ const FAQS = [
   },
   {
     q: 'Como funciona o recurso de PWA (Aplicativo)?',
-    a: 'Seus clientes podem adicionar o seu cardápio à tela inicial do celular como se fosse um aplicativo da App Store / Google Play, sem ocupar memória e com acesso ultra rápido.',
+    a: 'O cardápio abre pelo navegador e pode ser adicionado à tela inicial nos dispositivos compatíveis. É necessária conexão para carregar informações atualizadas e enviar pedidos.',
   },
   {
     q: 'Posso alterar preços e cadastrar novos produtos a qualquer momento?',
@@ -33,7 +33,7 @@ export const FAQ: React.FC = () => {
     <section id="faq" className="py-20 relative">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
-          <span className="text-xs font-bold uppercase tracking-widest text-orange-500">Tire Suas Dúvidas</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-cyan-500">Tire Suas Dúvidas</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mt-2">
             Perguntas Frequentes
           </h2>
@@ -45,14 +45,16 @@ export const FAQ: React.FC = () => {
             return (
               <div key={index} className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
                 <button
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${index}`}
                   onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="w-full p-6 text-left flex items-center justify-between font-bold text-white text-base hover:text-orange-400 transition-colors"
+                  className="w-full p-6 text-left flex items-center justify-between font-bold text-white text-base hover:text-cyan-400 transition-colors"
                 >
                   <span>{faq.q}</span>
-                  <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180 text-orange-500' : 'text-zinc-400'}`} />
+                  <ChevronDown className={`w-5 h-5 shrink-0 ml-3 transition-transform duration-300 ${isOpen ? 'rotate-180 text-cyan-500' : 'text-zinc-400'}`} />
                 </button>
                 {isOpen && (
-                  <div className="px-6 pb-6 text-sm text-zinc-300 leading-relaxed border-t border-white/5 pt-4">
+                  <div id={`faq-answer-${index}`} className="px-6 pb-6 text-sm text-zinc-300 leading-relaxed border-t border-white/5 pt-4">
                     {faq.a}
                   </div>
                 )}

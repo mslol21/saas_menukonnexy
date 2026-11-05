@@ -15,7 +15,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, isLight =
       <div className="relative">
         <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${isLight ? 'text-zinc-400' : 'text-zinc-400'}`} />
         <input
-          type="text"
+          type="search"
+          aria-label="Buscar no cardápio"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Buscar pratos, hambúrgueres, bebidas..."
@@ -27,8 +28,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, isLight =
         />
         {value && (
           <button
+            aria-label="Limpar busca"
             onClick={() => onChange('')}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 ${isLight ? 'text-zinc-400 hover:text-zinc-700' : 'text-zinc-400 hover:text-white'}`}
+            className={`absolute right-1 top-1/2 -translate-y-1/2 min-w-11 min-h-11 flex items-center justify-center p-1 ${isLight ? 'text-zinc-400 hover:text-zinc-700' : 'text-zinc-400 hover:text-white'}`}
           >
             <X className="w-4 h-4" />
           </button>

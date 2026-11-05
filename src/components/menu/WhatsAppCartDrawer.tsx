@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -47,6 +47,7 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
     generateWhatsAppLink,
   } = useCart();
 
+  const formId = useId();
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
 
@@ -352,6 +353,7 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
               <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Opção de Consumo</label>
               <div className="grid grid-cols-3 gap-2">
                 <button
+                  aria-pressed={orderType === 'table'}
                   onClick={() => setOrderType('table')}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                     orderType === 'table' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
@@ -360,6 +362,7 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
                   <QrCode className="w-4 h-4" /> Consumo na Mesa
                 </button>
                 <button
+                  aria-pressed={orderType === 'delivery'}
                   onClick={() => setOrderType('delivery')}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                     orderType === 'delivery' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
@@ -368,6 +371,7 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
                   <MapPin className="w-4 h-4" /> Delivery
                 </button>
                 <button
+                  aria-pressed={orderType === 'takeaway'}
                   onClick={() => setOrderType('takeaway')}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                     orderType === 'takeaway' ? 'bg-amber-500 text-zinc-950 font-black border-amber-400 shadow-md' : 'glass-panel text-zinc-400 border-white/10'
@@ -382,8 +386,10 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1">Seu Nome *</label>
+                  <label htmlFor={`${formId}-name`} className="block text-xs font-bold text-zinc-300 mb-1">Seu Nome *</label>
                   <input
+                    id={`${formId}-name`}
+                    autoComplete="name"
                     type="text"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
@@ -395,8 +401,10 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
 
                 {orderType === 'table' && (
                   <div>
-                    <label className="block text-xs font-bold text-zinc-300 mb-1">Número da Mesa</label>
+                    <label htmlFor={`${formId}-table`} className="block text-xs font-bold text-zinc-300 mb-1">Número da Mesa</label>
                     <input
+                      id={`${formId}-table`}
+                      inputMode="numeric"
                       type="number"
                       value={tableNumber}
                       onChange={(e) => setTableNumber(e.target.value)}
@@ -410,20 +418,23 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
               {/* Delivery Address & CEP Calculation */}
               {orderType === 'delivery' && (
                 <div className="p-4 rounded-2xl glass-panel border border-emerald-500/30 bg-emerald-500/5 space-y-3">
-                  <label className="block text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <label htmlFor={`${formId}-cep`} className="block text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5" /> Endereço de Entrega por CEP
                   </label>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div className="sm:col-span-2">
-                      <div className="flex gap-1.5">
+                      <div className="flex flex-col sm:flex-row gap-1.5">
                         <input
+                          id={`${formId}-cep`}
+                          autoComplete="postal-code"
+                          inputMode="numeric"
                           type="text"
                           value={cepInput}
                           onChange={(e) => setCepInput(e.target.value)}
                           onBlur={() => cepInput && handleCalculateCepFee(cepInput)}
                           placeholder="Informe seu CEP (ex: 14800-000)"
-                          className="flex-1 px-3 py-2 rounded-xl glass-panel text-xs text-white border border-white/10"
+                          className="min-w-0 flex-1 px-3 py-2 rounded-xl glass-panel text-xs text-white border border-white/10"
                         />
                         <button
                           type="button"
@@ -438,7 +449,9 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
                     </div>
 
                     <div>
+                      <label htmlFor={`${formId}-number`} className="block text-xs text-zinc-300 mb-1">Número do imóvel *</label>
                       <input
+                        id={`${formId}-number`}
                         type="text"
                         value={numberInput}
                         onChange={(e) => handleNumberChange(e.target.value)}
@@ -449,7 +462,9 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
                     </div>
                   </div>
 
+                  <label htmlFor={`${formId}-complement`} className="block text-xs text-zinc-300">Complemento (opcional)</label>
                   <input
+                    id={`${formId}-complement`}
                     type="text"
                     value={complementInput}
                     onChange={(e) => handleComplementChange(e.target.value)}
@@ -486,6 +501,7 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
               <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Forma de Pagamento</label>
               <div className="grid grid-cols-3 gap-2">
                 <button
+                  aria-pressed={paymentMethod === 'pix'}
                   onClick={() => setPaymentMethod('pix')}
                   className={`p-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 ${
                     paymentMethod === 'pix' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500 font-bold' : 'glass-panel text-zinc-400 border-white/10'
@@ -494,6 +510,7 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
                   <QrCode className="w-3.5 h-3.5" /> Pix
                 </button>
                 <button
+                  aria-pressed={paymentMethod === 'card'}
                   onClick={() => setPaymentMethod('card')}
                   className={`p-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 ${
                     paymentMethod === 'card' ? 'bg-blue-500/20 text-blue-400 border-blue-500 font-bold' : 'glass-panel text-zinc-400 border-white/10'
@@ -502,6 +519,7 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
                   <CreditCard className="w-3.5 h-3.5" /> Cartão
                 </button>
                 <button
+                  aria-pressed={paymentMethod === 'cash'}
                   onClick={() => setPaymentMethod('cash')}
                   className={`p-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 ${
                     paymentMethod === 'cash' ? 'bg-amber-500/20 text-amber-400 border-amber-500 font-bold' : 'glass-panel text-zinc-400 border-white/10'
@@ -514,16 +532,17 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
 
             {/* Cupom de Desconto Field */}
             <div className="p-3 rounded-2xl glass-panel border border-white/10 space-y-2">
-              <label className="block text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+              <label htmlFor={`${formId}-coupon`} className="block text-xs font-bold text-zinc-300 flex items-center gap-1.5">
                 <Tag className="w-3.5 h-3.5 text-amber-400" /> Cupom de Desconto
               </label>
               <div className="flex gap-2">
                 <input
+                  id={`${formId}-coupon`}
                   type="text"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   placeholder="Ex: BEMVINDO10"
-                  className="flex-1 px-3 py-1.5 rounded-xl glass-panel text-xs text-amber-400 font-mono font-bold border border-white/10 uppercase"
+                  className="min-w-0 flex-1 px-3 py-1.5 rounded-xl glass-panel text-xs text-amber-400 font-mono font-bold border border-white/10 uppercase"
                 />
                 <button
                   type="button"
@@ -562,15 +581,17 @@ export const WhatsAppCartDrawer: React.FC<WhatsAppCartDrawerProps> = ({
 
                       <div className="flex items-center gap-2">
                         <button
+                          aria-label={`Remover uma unidade de ${product.name}`}
                           onClick={() => updateQuantity(product.id, quantity - 1)}
-                          className="w-6 h-6 rounded-lg bg-zinc-800 text-white flex items-center justify-center text-xs font-bold"
+                          className="w-11 h-11 rounded-lg bg-zinc-800 text-white flex items-center justify-center text-xs font-bold"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className="text-xs font-bold text-white w-4 text-center">{quantity}</span>
                         <button
+                          aria-label={`Adicionar uma unidade de ${product.name}`}
                           onClick={() => updateQuantity(product.id, quantity + 1)}
-                          className="w-6 h-6 rounded-lg bg-amber-500 text-zinc-950 flex items-center justify-center text-xs font-bold"
+                          className="w-11 h-11 rounded-lg bg-amber-500 text-zinc-950 flex items-center justify-center text-xs font-bold"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
