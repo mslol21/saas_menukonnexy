@@ -13,9 +13,13 @@ export function middleware(request: NextRequest) {
     // Note: client-side AuthContext will also enforce strict RLS and user ownership
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  // Keep operational pages and JSON endpoints out of search. Authentication
+  // and business rules remain the responsibility of the existing application.
+  response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return response;
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/master/:path*'],
+  matcher: ['/admin/:path*', '/master/:path*', '/login/:path*', '/api/:path*'],
 };

@@ -1,6 +1,7 @@
-'use client';
+import { publicMetadata, SITE_TITLE, SITE_DESCRIPTION, serializeJsonLd } from '@/lib/seo/site';
+import { homeStructuredData } from '@/lib/seo/structured-data';
 
-import React from 'react';
+export const metadata = publicMetadata(SITE_TITLE, SITE_DESCRIPTION, '/');
 import { Navbar } from '@/components/landing/Navbar';
 import { Hero } from '@/components/landing/Hero';
 import { DemoPreview } from '@/components/landing/DemoPreview';
@@ -13,6 +14,7 @@ import { Footer } from '@/components/landing/Footer';
 export default function LandingPage() {
   return (
     <div className="konnexy-platform landing-page min-h-screen bg-zinc-950 text-white relative font-sans selection:bg-orange-500 selection:text-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(homeStructuredData) }} />
       <Navbar />
       <a href="#conteudo" className="skip-link">Pular para o conteúdo</a>
       <main id="conteudo">

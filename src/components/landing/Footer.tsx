@@ -66,10 +66,9 @@ export const Footer: React.FC = () => {
               >
                 +55 (16) 99155-1200
               </a>
-              <div className="text-[11px] text-zinc-500 mt-2 space-y-0.5">
-                <p>Konnexy Tech Ltd • CPF: 396.134.118-44</p>
-                <p>Sede / CEP: 55573-965</p>
-              </div>
+              <p className="text-xs text-zinc-400 mt-2">
+                Parte do ecossistema <a href="https://konnexy.com.br" className="text-cyan-400 hover:underline">Konnexy</a>.
+              </p>
             </div>
           </div>
         </div>

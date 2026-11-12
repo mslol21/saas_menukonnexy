@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { SITE_URL, SITE_NAME, PUBLIC_ROBOTS } from '@/lib/seo/site';
 import { MotionProvider } from '@/components/ui/MotionProvider';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { CartProvider } from '@/context/CartContext';
@@ -12,10 +13,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Konnexy Menu | Plataforma de Cardápio Digital Inteligente SaaS',
-  description: 'O melhor cardápio digital para restaurantes, cafeterias, hamburguerias e bares. Sem comissão sobre vendas, integrado ao WhatsApp e QR Code por mesa.',
-  keywords: ['cardapio digital', 'restaurante saas', 'qr code mesa', 'pedido whatsapp', 'menu online', 'konnexy menu'],
-  authors: [{ name: 'Konnexy Tech Team' }],
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_NAME, template: '%s | Konnexy Menu' },
+  applicationName: SITE_NAME,
+  robots: PUBLIC_ROBOTS,
   manifest: '/manifest.webmanifest',
   icons: { icon: '/konnexy-logo.jpg', apple: '/konnexy-logo.jpg' },
 };

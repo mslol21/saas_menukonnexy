@@ -1,23 +1,8 @@
-import { MetadataRoute } from 'next';
-import { MOCK_TENANTS } from '@/lib/mock-data';
+import type { MetadataRoute } from 'next';
+import { SITE_URL, isPreview } from '@/lib/seo/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://konnexymenu.vercel.app';
-
-  const tenantUrls = MOCK_TENANTS.map((t) => ({
-    url: `${baseUrl}/menu/${t.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily' as const,
-    priority: 0.9,
-  }));
-
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1.0,
-    },
-    ...tenantUrls,
-  ];
+  // Demo fixtures are not real businesses. Add merchant URLs only after
+  // verifying their publication status and public data source.
+  return isPreview ? [] : [{ url: SITE_URL, changeFrequency: 'weekly', priority: 1 }];
 }
