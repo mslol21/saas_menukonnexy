@@ -47,3 +47,18 @@ Referências oficiais:
 - https://developers.google.com/search/docs/appearance/ai-features
 - https://nextjs.org/docs/app/api-reference/functions/generate-metadata
 - https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots
+
+## Verificação em produção
+
+Commit de implementação: `9af24f99eea6b54a17c55d1d4172577b382d8eaf`.
+Deploy Vercel: `dpl_4kisLAbebeccExz8PHntVRjdVyG5`, produção READY, alias `menu.konnexy.com.br` confirmado.
+
+- HTTP 200 em home, robots, sitemap, login e demonstração.
+- Home: index/follow, canonical no domínio oficial e JSON-LD presentes.
+- Login: noindex/nofollow em HTML e X-Robots-Tag.
+- Demonstração: noindex/nofollow e canonical próprio sem parâmetros.
+- GET `/api/orders`: X-Robots-Tag noindex/nofollow; nenhuma escrita realizada.
+- FAQ: expandir/recolher funcionou; tecla espaço recolheu a resposta selecionada.
+- Alternância mensal atualizou preço para R$ 59,90/mês, preservando R$ 599,90/ano no seletor anual.
+- Harness de QA separado incorporou a página real em iframe de 375, 768, 1024 e 1440 px. Em cada largura, scrollWidth igual à largura útil (descontada a barra vertical): sem overflow horizontal no documento. Alvos do FAQ medidos em 88 px no celular e 72 px nas larguras maiores. Isso não equivale a teste em quatro dispositivos físicos.
+- Evidência visual: [FAQ publicado](review/konnexy-menu-seo.jpg).
